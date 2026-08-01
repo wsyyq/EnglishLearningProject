@@ -914,14 +914,32 @@ M1-T01 自动验收结果：
 - 进程人工核验：应用正常关闭，最终无残留 Godot 进程。
 - Git 提交：未创建。
 
-下一任务：
+当前任务：
 
 ```text
 M1-T02：文本规范化
-状态：Not Started
+状态：Done
 ```
 
-不得自动执行 M1-T02。
+M1-T02 自动验收结果：
+
+- 开始时间：2026-08-01 20:39 +08:00。
+- 前置基线：M1-T01 提交 `8849f987c919faa09d52c2413b9ccd9a221627c9` 存在；分支为 `main`；初始工作区干净；M1-T01 为 Done；解决方案为 8 个项目；目标框架未变化；基线构建 0 警告、0 错误，测试 35/35 通过。
+- 初次核验发现 Godot 进程并按停止条件暂停；用户关闭后重新核验无 Godot 进程，才开始实现。
+- 在 `GameLexicon.Domain` 新增 `ITextNormalizer` 与 `EnglishExpressionNormalizer`；未增加项目引用或 NuGet 包。
+- 规范化顺序：Unicode Form KC、常见弯撇号统一、Invariant 小写、连续 Unicode 空白折叠、首尾空白及 Unicode Punctuation 清理。
+- Null 契约：`null` 抛出仅含参数名的 `ArgumentNullException`；空字符串和仅空白字符串返回空字符串。
+- 保留内部撇号、连字符及其他内部标点；不做词干化、词形还原、短语拆分、句子切分或目标范围重定位；不记录输入或输出文本。
+- 新增 Domain 测试用例 40 个；Domain 测试最终 41/41 通过，覆盖规格案例、Form KC、Unicode 空白、撇号、边界标点、内部标点、幂等、文化无关、Null/空值和输入不变。
+- Domain、Domain.Tests 与 8 项目根解决方案构建成功，0 警告、0 错误；根解决方案测试 75/75 通过，0 失败、0 跳过。
+- 未修改数据库、迁移、Godot、UI、Repository、Application、Infrastructure、任何 `.csproj` 或 NuGet Audit 设置。
+- 非 GUI 人工审查：2026-08-01 通过。接口范围、Domain 分层、Form KC、Invariant 小写、Unicode 空白、弯撇号、边界标点、内部撇号/连字符、Null 安全、无状态、幂等和依赖边界均确认通过。
+- 人工范围审查：40 个新增测试覆盖合理；根解决方案 75/75 通过；diff 仅属于 M1-T02；未修改项目引用、数据库、迁移、Godot、UI 或 Repository。
+- 完成时间：2026-08-01 20:48 +08:00。
+- Git 提交：未创建。
+
+下一任务：待 milestone_architect 根据产品规格拆分。
+状态：Not Started。不得自动执行后续任务。
 
 ---
 
