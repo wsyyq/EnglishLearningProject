@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[node name="CaptureInboxView" type="MarginContainer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "截图收件箱"
+
+[node name="PlaceholderMessage" type="Label" parent="Content"]
+layout_mode = 2
+text = "截图收件箱功能将在后续里程碑实现。"

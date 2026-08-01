@@ -33,9 +33,72 @@ grow_vertical = 2
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 
+[node name="SidebarMargin" type="MarginContainer" parent="AppLayout/Sidebar"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 20
+
+[node name="SidebarContent" type="VBoxContainer" parent="AppLayout/Sidebar/SidebarMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="AppTitle" type="Label" parent="AppLayout/Sidebar/SidebarMargin/SidebarContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "GameLexicon"
+
+[node name="NavigationList" type="VBoxContainer" parent="AppLayout/Sidebar/SidebarMargin/SidebarContent"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="DashboardButton" type="Button" parent="AppLayout/Sidebar/SidebarMargin/SidebarContent/NavigationList"]
+layout_mode = 2
+toggle_mode = true
+text = "首页"
+alignment = 0
+
+[node name="CaptureInboxButton" type="Button" parent="AppLayout/Sidebar/SidebarMargin/SidebarContent/NavigationList"]
+layout_mode = 2
+toggle_mode = true
+text = "截图收件箱"
+alignment = 0
+
+[node name="LibraryButton" type="Button" parent="AppLayout/Sidebar/SidebarMargin/SidebarContent/NavigationList"]
+layout_mode = 2
+toggle_mode = true
+text = "词条库"
+alignment = 0
+
+[node name="ReviewButton" type="Button" parent="AppLayout/Sidebar/SidebarMargin/SidebarContent/NavigationList"]
+layout_mode = 2
+toggle_mode = true
+text = "今日复习"
+alignment = 0
+
+[node name="StatisticsButton" type="Button" parent="AppLayout/Sidebar/SidebarMargin/SidebarContent/NavigationList"]
+layout_mode = 2
+toggle_mode = true
+text = "统计"
+alignment = 0
+
+[node name="SettingsButton" type="Button" parent="AppLayout/Sidebar/SidebarMargin/SidebarContent/NavigationList"]
+layout_mode = 2
+toggle_mode = true
+text = "设置"
+alignment = 0
+
+[node name="SidebarSpacer" type="Control" parent="AppLayout/Sidebar/SidebarMargin/SidebarContent"]
+layout_mode = 2
+size_flags_vertical = 3
+
 [node name="ContentHost" type="MarginContainer" parent="AppLayout"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="RouteHost" type="Control" parent="AppLayout/ContentHost"]
+layout_mode = 2
 
 [node name="ToastLayer" type="CanvasLayer" parent="."]
 
