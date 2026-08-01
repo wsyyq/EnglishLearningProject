@@ -9,6 +9,18 @@ public partial class AppRoot : Control
 
     public override void _Ready()
     {
+        try
+        {
+            var userDataPath = ProjectSettings.GlobalizePath("user://");
+            AppServices.Initialize(userDataPath);
+            GD.Print("GameLexicon services initialized.");
+        }
+        catch (Exception exception)
+        {
+            GD.PushError($"GameLexicon service initialization failed ({exception.GetType().Name}).");
+            throw;
+        }
+
         GD.Print("GameLexicon AppRoot initialized.");
 
         var routeHost = GetNodeOrNull<Control>("AppLayout/ContentHost/RouteHost")
@@ -20,6 +32,11 @@ public partial class AppRoot : Control
         Navigate(AppRoute.Dashboard);
 
         GD.Print("GameLexicon navigation initialized.");
+    }
+
+    public override void _ExitTree()
+    {
+        AppServices.Shutdown();
     }
 
     private static void RegisterRoutes(NavigationService navigationService)

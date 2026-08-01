@@ -2,56 +2,64 @@
 
 ## Current task
 
-- Task ID: `M0-T03`
+- Task ID: `M0-T04`
 - Status: Done
-- Primary domain: Godot
+- Primary domain: Infrastructure / Godot composition root
 - Primary agent: primary coordinator
 - Supporting agents: `godot_specialist`, `milestone_architect`, `skill_curator`
 
-## Evidence reviewed
+## Scope implemented
 
-- M0-T03 instruction, product/status/environment/decision documents, committed M0-T02 baseline, and clean initial Git state.
-- Existing App scene/script, Godot SDK/TFM, eight-project root solution, and absence of an open Godot editor.
-- Baseline and post-change builds/tests, headless scene loading, navigation initialization output, structure checks, and current diff scope.
+- Application owns `AppSettings`, `LoggingSettings`, `IAppSettingsService`, `IAppLogger`, and `AppLogLevel`.
+- Infrastructure owns JSON settings persistence, size/date rolling file logging, retention cleanup, and common credential-value redaction.
+- Godot resolves `user://`, composes services before navigation, shuts them down safely, and exposes only the development-mode toggle in Settings.
+- M0-T03 navigation, route caching, default Dashboard, and mutually selected sidebar buttons remain unchanged.
 
-## Decisions
+## Runtime behavior
 
-- Keep AppRoot stable and switch only cached page Controls inside RouteHost.
-- Use stable English `AppRoute` keys with Chinese display labels.
-- Lazy-load and cache at most one page instance per route; synchronize button selection only after successful navigation.
-
-## Files changed
-
-- Added `AppRoute`, `NavigationService`, their Godot UID files, and six placeholder page scenes.
-- Incrementally updated `App.tscn` and `AppRoot.cs` for Sidebar, RouteHost, buttons, route registration, and default Dashboard navigation.
-- Updated implementation status and this handoff with final automated and GUI verification evidence.
+- Settings logical path: `user://config/settings.json`.
+- Log logical directory: `user://logs/`.
+- Defaults: schema version 1, development mode disabled, retention 14 days, maximum file size 10 MB.
+- Log naming: `gamelexicon-YYYYMMDD.log`, then `.1.log`, `.2.log`, and later numeric rolls.
+- Settings use a same-directory temporary file before safe replacement; corrupt JSON is preserved with a timestamped `.corrupt-*` name and defaults are recreated.
+- Debug output follows development mode at runtime. Learning text and OCR bodies remain prohibited by call-site policy; common credential values are redacted in every mode.
 
 ## Validation
 
-- Baseline and post-change root solution restore/build: passed, 8 projects, 0 warnings and 0 errors.
-- Tests: 3 passed, 0 failed, 0 skipped.
-- Godot headless editor build and main-scene load passed.
-- Output confirmed AppRoot initialization, default Dashboard navigation, and navigation initialization.
-- GUI navigation verification passed for all six routes, mutual selection, repeated clicks, return navigation, stable Sidebar/AppRoot, and absence of duplicate pages or runtime errors.
+- Initial baseline: clean worktree, M0-T03 commit `483dfe7` present, eight projects, no Godot process, build passed with 0 warnings/errors, tests 3/3 passed.
+- Infrastructure tests: 19/19 passed, including configuration, persistence, corrupt-file recovery, rolling, cleanup, concurrency, development mode, exceptions, and redaction.
+- Root solution tests: 21/21 passed; Godot and root solution builds passed with 0 warnings and 0 errors.
+- Godot 4.7.1 .NET headless editor build and launch passed.
+- Runtime `settings.json` parsed successfully with expected defaults; the current application log contains safe startup, settings-loaded, and normal-shutdown events.
+- Headless output confirmed service initialization, stable AppRoot initialization, default Dashboard navigation, and navigation initialization.
+- GUI follow-up fix: successful save feedback clears after two seconds; rapid toggles reset the timer so an older callback cannot clear newer feedback.
+- GUI verification passed: application startup, all six routes, settings controls, default-off state, enabled persistence after the first restart, disabled persistence after the second restart, layout, and error-free shutdown were confirmed.
+- Manual log review passed: startup, normal shutdown, and development-mode enabled/disabled events exist; no credential values, learning content, complete settings JSON, or obvious log flooding were found.
 
-## Skills used
+## Files changed
 
-- `project-routing`
-- `godot-workflow`
-- `milestone-workflow`
-- `skill-maintenance`
+- Added Application configuration/logging models and abstractions.
+- Added Infrastructure JSON configuration, rolling logger, options, and redactor.
+- Added Godot `AppServices`, Settings view script, generated UID files, and development-mode UI.
+- Added Infrastructure behavior tests and shared temporary-directory test helpers.
+- Modified `AppRoot.cs`, `SettingsView.tscn`, implementation status, and this handoff.
+- `docs/ENVIRONMENT.md` was not changed because no machine environment fact changed.
 
-## Skill impact
+## Manual verification completed
 
-- Update required: No
-- Updated skills: none
-- Reason: ordinary navigation scripts and scenes do not change reusable routing, safety, stop conditions, or acceptance policy.
+- Dashboard and all six navigation pages remained functional without page overlap.
+- The development-mode control and safety description were visible; the initial value was disabled.
+- Enabling and disabling showed successful save feedback and persisted across the required two restarts.
+- No C# exception, resource error, obvious layout failure, or residual Godot process was observed.
+- Logs contained startup, normal shutdown, and enabled/disabled events without credentials, learning text, OCR content, complete settings JSON, or obvious flooding.
 
-## Open blockers
+## Skills used and impact
 
-- None for M0-T03 completion.
-- Six route pages remain placeholders by design.
+- Used: `project-routing`, `milestone-workflow`, `godot-workflow`, `skill-maintenance`.
+- Skill update required: No.
+- Reason: this is ordinary milestone implementation and does not change reusable routing, safety, path-source, or validation workflow.
 
 ## Next allowed action
 
-- `M0-T04`: Not Started. Do not execute automatically; wait for explicit user instruction.
+- M0-T04 is complete and ready for the user to commit with UGit.
+- `M1-T01` remains Not Started and must not be executed automatically.

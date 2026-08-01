@@ -1,4 +1,6 @@
-[gd_scene format=3]
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/UI/SettingsView.cs" id="1_settings"]
 
 [node name="SettingsView" type="MarginContainer"]
 layout_mode = 3
@@ -11,6 +13,7 @@ theme_override_constants/margin_left = 32
 theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 32
 theme_override_constants/margin_bottom = 32
+script = ExtResource("1_settings")
 
 [node name="Content" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -22,4 +25,20 @@ text = "设置"
 
 [node name="PlaceholderMessage" type="Label" parent="Content"]
 layout_mode = 2
-text = "配置与设置功能将在后续里程碑实现。"
+text = "当前仅提供基础应用设置。"
+
+[node name="DevelopmentSection" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DevelopmentModeCheckBox" type="CheckButton" parent="Content/DevelopmentSection"]
+layout_mode = 2
+text = "开发模式"
+
+[node name="DevelopmentModeDescription" type="Label" parent="Content/DevelopmentSection"]
+layout_mode = 2
+text = "开发模式会记录更多技术诊断信息，但不应记录学习文本或密钥。"
+autowrap_mode = 2
+
+[node name="SaveStatusLabel" type="Label" parent="Content/DevelopmentSection"]
+layout_mode = 2
