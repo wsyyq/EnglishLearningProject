@@ -103,14 +103,15 @@ M0-T01：创建解决方案与基础分层项目
 
 ---
 
-## 3. 当前任务
+## 3. 最近完成任务详情
 
 ### M0-T01：创建解决方案与基础分层项目
 
 - Task ID：`M0-T01`
 - 名称：创建解决方案与基础分层项目
-- 状态：`Not Started`
-- 开始时间：未开始
+- 状态：`Done`
+- 开始时间：2026-08-01 16:20 +08:00
+- 完成时间：2026-08-01 16:30 +08:00
 - 负责人：Codex
 - 前置任务：`PREP-01`
 - 阻塞状态：无
@@ -290,28 +291,28 @@ GameLexicon.Infrastructure
 
 必须完成：
 
-- [ ] `dotnet build GameLexicon.sln` 成功
-- [ ] 全部当前测试通过
-- [ ] 至少存在一个通过的 smoke test
-- [ ] Domain 项目无平台依赖
-- [ ] 项目引用方向符合本节规则
-- [ ] 不存在循环项目引用
-- [ ] 未创建第二个 Godot 工程
-- [ ] 未移动现有 Godot 工程
-- [ ] 未实现后续里程碑功能
+- [x] `dotnet build GameLexicon.sln` 成功
+- [x] 全部当前测试通过
+- [x] 至少存在一个通过的 smoke test
+- [x] Domain 项目无平台依赖
+- [x] 项目引用方向符合本节规则
+- [x] 不存在循环项目引用
+- [x] 未创建第二个 Godot 工程
+- [x] 未移动现有 Godot 工程
+- [x] 未实现后续里程碑功能
 
 ### 3.8 人工验收
 
 必须确认：
 
-- [ ] `GameLexicon.sln` 位于仓库根目录
-- [ ] `src/`、`tools/`、`tests/` 位于仓库根目录
-- [ ] `english-learning-project/` 路径未变化
-- [ ] 现有 `project.godot` 未被不必要修改
-- [ ] 未将生成缓存提交到 Git
-- [ ] `.gitignore` 能排除 `.godot/`、`bin/` 和 `obj/`
-- [ ] `docs/IMPLEMENTATION_STATUS.md` 与实际实现一致
-- [ ] Codex 最终报告包含：
+- [x] `GameLexicon.sln` 位于仓库根目录
+- [x] `src/`、`tools/`、`tests/` 位于仓库根目录
+- [x] `english-learning-project/` 路径未变化
+- [x] 现有 `project.godot` 未被不必要修改
+- [x] 未将生成缓存提交到 Git
+- [x] `.gitignore` 能排除 `.godot/`、`bin/` 和 `obj/`
+- [x] `docs/IMPLEMENTATION_STATUS.md` 与实际实现一致
+- [x] Codex 最终报告包含：
   - 创建文件
   - 修改文件
   - 执行命令
@@ -321,9 +322,29 @@ GameLexicon.Infrastructure
   - 已知限制
   - 建议的下一任务
 
+### 3.9 完成结果
+
+- 创建文件：
+  - `GameLexicon.sln`
+  - 三个生产类库项目及其空占位类型
+  - 一个 CaptureBridge 控制台项目骨架
+  - 三个 xUnit 测试项目及程序集加载 smoke test
+- 修改文件：
+  - `.gitignore`
+  - `docs/IMPLEMENTATION_STATUS.md`
+- 项目引用：
+  - Application → Domain
+  - Infrastructure → Application、Domain
+  - CaptureBridge → 无生产项目引用
+  - 各测试项目 → 各自对应的生产项目
+- 构建结果：成功，0 个警告，0 个错误。
+- 测试结果：成功，3 个测试通过，0 个失败，0 个跳过。
+- 已知限制：普通 C# 项目暂以本机唯一可用 targeting pack 对应的 `net10.0` 为目标；M0-T02 必须以 Godot 自动生成的 `.csproj` 为准重新核对兼容目标框架。
+- 后续任务：`M0-T02：初始化 Godot .NET/C# 工程与基础主场景`（当前因 Godot 4.7.1 .NET 环境未验证而阻塞）。
+
 ---
 
-## 4. 下一任务
+## 4. 当前任务（下一任务）
 
 ### M0-T02：初始化 Godot .NET/C# 工程与基础主场景
 
@@ -375,9 +396,20 @@ D:\UGit\EnglishLearningProject\
 ├─ .git\
 ├─ .gitignore
 ├─ AGENTS.md
+├─ GameLexicon.sln
 ├─ docs\
 │  ├─ PRODUCT_SPEC.md
 │  └─ IMPLEMENTATION_STATUS.md
+├─ src\
+│  ├─ GameLexicon.Domain\
+│  ├─ GameLexicon.Application\
+│  └─ GameLexicon.Infrastructure\
+├─ tools\
+│  └─ GameLexicon.CaptureBridge\
+├─ tests\
+│  ├─ GameLexicon.Domain.Tests\
+│  ├─ GameLexicon.Application.Tests\
+│  └─ GameLexicon.Infrastructure.Tests\
 └─ english-learning-project\
    ├─ .editorconfig
    ├─ .gitattributes
@@ -406,9 +438,10 @@ english-learning-project/
 ```
 
 - 未发现嵌套 `.git` 仓库。
-- 当前没有根解决方案。
-- 当前没有普通 C# 类库项目。
-- 当前没有测试项目。
+- 根解决方案为 `GameLexicon.sln`，包含 7 个项目。
+- 当前有 Domain、Application、Infrastructure 三个普通 C# 类库项目。
+- 当前有三个 xUnit 测试项目，每个项目包含一个通过的 smoke test。
+- CaptureBridge 当前只有控制台项目骨架，没有实现平台功能。
 - 当前没有场景目录。
 - 当前没有脚本目录。
 - 当前没有插件目录。
@@ -468,7 +501,7 @@ Jolt Physics
 | 项目 | 当前状态 |
 |---|---|
 | Godot `.csproj` | 尚未生成 |
-| 根 `.sln` | 尚未生成 |
+| 根 `.sln` | 已生成；Godot 工程尚未加入 |
 | Godot C# 脚本 | 尚未创建 |
 | GDScript 脚本 | 尚未创建 |
 | 场景目录 | 尚未创建 |
@@ -709,7 +742,7 @@ M0-T01 完成后，Codex 必须更新本文件：
 1. 将：
 
 ```text
-M0-T01 状态：Not Started
+M0-T01 状态：Done
 ```
 
 改为：
@@ -750,32 +783,16 @@ M0-T02 状态：Blocked
 
 ## 12. Codex 当前执行摘要
 
-当前允许执行的任务只有：
+当前已完成：
 
 ```text
 M0-T01：创建解决方案与基础分层项目
 ```
 
-当前不允许执行：
+当前等待执行但仍处于阻塞状态：
 
 ```text
-M0-T02 及后续任务
+M0-T02：初始化 Godot .NET/C# 工程与基础主场景
 ```
 
-开始 M0-T01 前，Codex 必须：
-
-1. 阅读必需文档。
-2. 检查 Git 状态。
-3. 报告预计修改文件。
-4. 确认不移动现有 Godot 工程。
-5. 确认不初始化 Godot C# 工程。
-6. 确认不添加后续功能。
-
-完成 M0-T01 后，Codex 必须：
-
-1. 构建解决方案。
-2. 运行全部当前测试。
-3. 检查项目引用。
-4. 检查 Git diff。
-5. 更新本文件。
-6. 停止并等待下一条指令。
+M0-T01 已完成构建、测试、引用检查、Git diff 检查和状态更新。不得自动执行 M0-T02；应先确认 Godot 4.7.1 .NET 环境，再等待用户明确指令。
