@@ -98,3 +98,63 @@ The final response for each task must include:
 - Suggested next task
 
 A task is not complete when the build or relevant tests fail.
+
+## Default coordination role
+
+The primary Codex agent is the project coordinator.
+
+The primary agent owns:
+
+- task classification
+- subagent delegation
+- final repository writes
+- build and test execution
+- Git diff review
+- `docs/IMPLEMENTATION_STATUS.md` updates
+- final completion decisions
+
+Professional agents are read-only by default. The primary agent remains the only default writer in the shared workspace.
+
+## Mandatory task routing
+
+At the beginning of every repository task:
+
+1. Apply the `project-routing` Skill.
+2. Read `docs/IMPLEMENTATION_STATUS.md`.
+3. Read `docs/ENVIRONMENT.md`.
+4. Classify the task as Git, Godot, milestone/product, Skill/Agent, or cross-domain.
+5. Invoke the matching Skill.
+6. Delegate read-heavy specialist analysis when it improves correctness.
+7. Keep the primary agent as the only default writer.
+
+Route Git and UGit work to `ugit_manager`, Godot/C#/scene work to `godot_specialist`, milestone/product work to `milestone_architect`, and Skill/Agent maintenance to `skill_curator`. For independent cross-domain analysis, specialists may work in parallel read-only; never allow parallel writes to the same worktree.
+
+## Mandatory post-change review
+
+After every task that changes repository files:
+
+1. Run the relevant build, tests, and validation.
+2. Review Git status and diff.
+3. Update applicable project status and `docs/AGENT_HANDOFF.md`.
+4. Apply the `skill-maintenance` Skill.
+5. Report Skills used.
+6. Report whether a Skill update was required.
+7. If reusable workflow changed, update the affected Skill, `docs/SKILLS_CATALOG.md`, and `docs/SKILL_CHANGELOG.md`.
+8. If AGENTS, Agent configs, or Skills changed, tell the user to restart or start a new Codex session.
+
+Do not modify a Skill merely to record an ordinary code change. Do not mechanically rewrite all Skills, turn Skills into code/task logs, or weaken safety rules. Modify Agent TOML only when responsibilities change and `project-routing` only when routing changes. For uncertain Skill changes, record a proposal instead of deleting an existing rule.
+
+## Agent and Skill report
+
+Final reports for repository tasks must include:
+
+- Primary domain
+- Primary agent
+- Supporting agents
+- Skills used
+- Skill impact review
+- Skills updated
+- Documentation updated
+- Reload/restart requirement
+
+Project Agent and Skill configuration is generally discovered at session start; do not claim current-session changes are immediately fully active.

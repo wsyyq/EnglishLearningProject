@@ -351,7 +351,7 @@ GameLexicon.Infrastructure
 - Task ID：`M0-T02`
 - 名称：初始化 Godot .NET/C# 工程与基础主场景
 - 状态：`Blocked`
-- 阻塞原因：尚未确认 Godot 4.7.1 .NET 编辑器路径和 C# 工程生成能力
+- 阻塞原因：Godot 4.7.1 .NET 路径提示已更新，但尚未执行 M0-T02 环境验证，也尚未确认 C# 工程生成能力
 - 前置任务：
   - `M0-T01` 完成
   - Godot .NET 环境验证完成
@@ -527,10 +527,12 @@ Jolt Physics
 | 工具 | 当前状态 |
 |---|---|
 | Godot | 命令不在 `PATH` |
-| Godot 精确版本 | 尚未确认 |
-| Godot .NET 支持 | 尚未确认 |
-| 当前观察到的进程名 | `godot.windows.opt.tools.64` |
-| Godot 可执行文件路径 | 尚未确认 |
+| Godot 安装目录 | `E:\SteamLibrary\steamapps\common\Godot Engine`（路径提示已提供，尚未验证） |
+| Godot .NET 主程序 | `E:\SteamLibrary\steamapps\common\Godot Engine\Godot_v4.7.1-stable_mono_win64.exe`（M0-T02 主验证程序，尚未验证） |
+| Godot .NET 控制台程序 | `E:\SteamLibrary\steamapps\common\Godot Engine\Godot_v4.7.1-stable_mono_win64_console.exe`（命令行及 headless 验证程序，尚未验证） |
+| Steam 启动兼容程序 | `E:\SteamLibrary\steamapps\common\Godot Engine\godot.windows.opt.tools.64.exe`（仅用于额外版本验证） |
+| Godot 精确版本 | 路径名称指向 4.7.1，实际版本尚未执行验证 |
+| Godot .NET 支持 | 路径名称指向 Mono 发行版，实际支持尚未执行验证 |
 | `.NET SDK` | `10.0.301` |
 | Git | `2.55.0.windows.3` |
 
@@ -668,7 +670,22 @@ docs/
 
 ### 10.1 Godot 编辑器版本
 
-状态：待确认
+状态：路径提示已更新，环境验证待执行
+
+M0-T02 应使用：
+
+```text
+主验证程序：
+E:\SteamLibrary\steamapps\common\Godot Engine\Godot_v4.7.1-stable_mono_win64.exe
+
+命令行及 headless 验证程序：
+E:\SteamLibrary\steamapps\common\Godot Engine\Godot_v4.7.1-stable_mono_win64_console.exe
+
+Steam 启动兼容程序（仅额外版本验证）：
+E:\SteamLibrary\steamapps\common\Godot Engine\godot.windows.opt.tools.64.exe
+```
+
+本次仅更新路径提示，未启动 Godot，也未执行 M0-T02 环境验证。
 
 需要确认：
 
@@ -796,3 +813,38 @@ M0-T02：初始化 Godot .NET/C# 工程与基础主场景
 ```
 
 M0-T01 已完成构建、测试、引用检查、Git diff 检查和状态更新。不得自动执行 M0-T02；应先确认 Godot 4.7.1 .NET 环境，再等待用户明确指令。
+
+---
+
+## 13. META 基础设施任务
+
+### META-T01：部署项目级多 Agent、任务路由与 Skills 自维护系统
+
+- Task ID：`META-T01`
+- 状态：`Done`
+- 完成日期：2026-08-01
+- 范围：仅项目级 Codex Agent/Skill 配置与共享文档
+- 创建：
+  - `.codex/config.toml`
+  - `.codex/agents/` 下四个只读专业 Agent
+  - `.agents/skills/` 下五个项目 Skill
+  - `docs/AGENT_SYSTEM.md`
+  - `docs/SKILLS_CATALOG.md`
+  - `docs/AGENT_HANDOFF.md`
+  - `docs/SKILL_CHANGELOG.md`
+  - `docs/ENVIRONMENT.md`
+  - `docs/DECISIONS.md`
+- 修改：
+  - `AGENTS.md`：加入协调器、任务路由、单写入者和 Skill Impact Review 规则
+  - `docs/IMPLEMENTATION_STATUS.md`：记录 META-T01，不改变 M0-T02 业务状态
+- 验证：
+  - 5 个 TOML 文件可由标准 `tomllib` 解析
+  - 4 个 Agent 名称唯一，均为 `read-only`
+  - 5 个 Skill frontmatter、名称、描述和正文结构通过等价检查
+  - Agent、Skill、catalog 和 AGENTS 引用一致
+  - 未发现凭证或密钥赋值
+- Skill Impact Review：`Yes`；初始创建五个可复用项目 Skills，并更新 catalog/changelog
+- 已知限制：`skill-creator` 的 `quick_validate.py` 因现有运行环境缺少 `PyYAML` 无法执行；未安装依赖，改用 Python 标准库完成等价结构检查
+- 会话要求：修改了 `AGENTS.md`、Agent TOML 和 Skills；必须重启或新开 Codex 会话后再验证自动发现与路由
+- M0-T02：保持原状态，本任务未执行
+- 下一步：新会话中执行只读路由验证，不自动开始 M0-T02
