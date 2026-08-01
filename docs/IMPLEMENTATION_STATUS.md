@@ -991,8 +991,39 @@ M1-T04 自动验收结果：
 - 完成时间：2026-08-01 21:33 +08:00。
 - Git 提交：未创建。
 
-下一任务：M1-T05：Migration002 手工例句与检索支持。
-状态：Not Started。不得自动执行 M1-T05。
+当前任务：
+
+```text
+M1-T05：Migration002 手工例句与检索支持
+状态：Done
+```
+
+M1-T05 自动验收结果：
+
+- 开始时间：2026-08-01 21:52 +08:00。
+- 前置基线：M1-T04 提交 `e67f5cf9fc13a2a5220885310765e8653791bea0` 存在；分支为 `main`；初始工作区干净；M1-T04 为 Done；解决方案为 8 个项目；目标框架未变化；无 Godot 进程；基线构建 0 警告、0 错误，测试 205/205 通过。
+- Migration001 初始与最终 Git Blob 哈希均为 `1fd5546081fe87c479ebd21d52e26f7d1dfaa636`，文件未修改。
+- 新增 `Migration002_ManualExamplesAndSearchSupport`，Version 为 2；MigrationRunner 与 Version 1 未修改。
+- 在 Runner 管理的单迁移事务中备份并重建 `sentence_examples` 和 `entry_examples`；未关闭 foreign keys，未使用忽略或覆盖式复制。
+- `sentence_examples.capture_id` 改为可空，并加入 `ocr_region_id IS NULL OR capture_id IS NOT NULL` 数据库约束；原列、默认值、外键及删除行为保持。
+- 迁移内部校验例句与链接迁移前后行数，结束前执行 `PRAGMA foreign_key_check`，成功后不残留 Migration002 临时对象。
+- 创建指令规定的六个最小索引；未创建可选 Capture/OCR 索引、FTS、模糊搜索或额外业务结构。
+- `AppServices` 已注册 Version 1 和 Version 2；未修改 AppRoot、UI、项目引用、目标框架或 NuGet 包。
+- 新增 Infrastructure 测试 7 个；Infrastructure 测试最终 40/40 通过；根解决方案测试 212/212 通过，0 失败、0 跳过。
+- 测试覆盖空库 1→2、真实 v1 数据和链接逐字段无损升级、手工/Capture/OCR 来源组合、外键删除行为、六索引、第二次运行幂等、索引阶段故障完整回滚，以及数据库/WAL/SHM 可删除。
+- 根解决方案（包含 Godot 项目）构建成功，0 警告、0 错误；Godot 4.7.1 .NET 两次 headless 应用启动均成功并正常退出。
+- 实际 `user://` 数据库在迁移前已备份至仓库外 `C:\Users\Administrator\AppData\Local\GameLexiconValidationBackups\M1-T05-20260801-220845`；运行时最终 schema version 为 2，Version 2 记录一行，foreign_key_check 为 0 行，无临时对象，六索引齐全。
+- 日志增量显示 Migration 2 应用一次、schema current 2 两次、初始化失败 0 次；未输出数据库内容或用户学习文本。
+- 已知验证限制：Godot `--headless --editor --build-solutions --quit` 在本机三次均无输出并超时，残留的本轮 console 进程已按精确 PID 终止；直接 Godot headless 双启动、Godot 项目随根解决方案构建及运行时迁移均通过，最终无 Godot 进程。
+- 未实现 Repository、查询 SQL、UseCase 或 UI；M1-T06 未执行。
+- 非 GUI 人工审查于 2026-08-01 完成并通过：Version 2、Migration001 不变、事务重建、无损数据和链接、来源约束、外键行为、行数与 foreign_key_check、失败回滚、六索引、幂等、运行时注册、测试和任务范围均确认通过。
+- 用户确认 Godot 实际 headless 双启动通过，并接受 `--headless --editor --build-solutions` 未自动退出作为已如实记录的验证限制。
+- GUI 验收不适用。
+- 完成时间：2026-08-01 22:29 +08:00。
+- Git 提交：未创建。
+
+下一任务：M1-T06：SQLite Repository 实现。
+状态：Not Started。不得自动执行 M1-T06。
 
 ---
 

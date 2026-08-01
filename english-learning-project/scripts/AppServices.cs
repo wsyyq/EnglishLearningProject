@@ -66,7 +66,7 @@ public static class AppServices
             });
             var migrationRunner = new MigrationRunner(
                 connectionFactory,
-                [new Migration001_Initial()],
+                [new Migration001_Initial(), new Migration002_ManualExamplesAndSearchSupport()],
                 logger: logger);
             await migrationRunner.RunAsync(cancellationToken);
             logger.Information("Database", "InitializationCompleted", "Database initialization completed.");
