@@ -2,64 +2,72 @@
 
 ## Current task
 
-- Task ID: `M0-T04`
+- Task ID: `M1-T01`
 - Status: Done
-- Primary domain: Infrastructure / Godot composition root
+- Primary domain: Infrastructure / Persistence
 - Primary agent: primary coordinator
 - Supporting agents: `godot_specialist`, `milestone_architect`, `skill_curator`
 
 ## Scope implemented
 
-- Application owns `AppSettings`, `LoggingSettings`, `IAppSettingsService`, `IAppLogger`, and `AppLogLevel`.
-- Infrastructure owns JSON settings persistence, size/date rolling file logging, retention cleanup, and common credential-value redaction.
-- Godot resolves `user://`, composes services before navigation, shuts them down safely, and exposes only the development-mode toggle in Settings.
-- M0-T03 navigation, route caching, default Dashboard, and mutually selected sidebar buttons remain unchanged.
+- Infrastructure references `Microsoft.Data.Sqlite 8.0.29` and the audited native runtime bundle `SQLitePCLRaw.bundle_e_sqlite3 3.0.5`.
+- Added `DatabaseOptions`, `SqliteConnectionFactory`, `IDatabaseMigration`, `MigrationRunner`, `MigrationResult`, and `Migration001_Initial`.
+- Godot resolves `user://data/gamelexicon.db` and awaits migration completion before initializing M0-T03 navigation.
+- No Repository, CRUD, text normalization, database UI, or M1-T02 behavior was implemented.
 
-## Runtime behavior
+## Database behavior
 
-- Settings logical path: `user://config/settings.json`.
-- Log logical directory: `user://logs/`.
-- Defaults: schema version 1, development mode disabled, retention 14 days, maximum file size 10 MB.
-- Log naming: `gamelexicon-YYYYMMDD.log`, then `.1.log`, `.2.log`, and later numeric rolls.
-- Settings use a same-directory temporary file before safe replacement; corrupt JSON is preserved with a timestamped `.corrupt-*` name and defaults are recreated.
-- Debug output follows development mode at runtime. Learning text and OCR bodies remain prohibited by call-site policy; common credential values are redacted in every mode.
+- Logical path: `user://data/gamelexicon.db`.
+- Each open returns a distinct non-pooled connection with Foreign Keys enabled and a 5000 ms Busy Timeout.
+- WAL is enabled once per factory initialization and verified against a real file database.
+- Runner validates positive, unique versions, executes pending migrations in ascending order, and rejects databases newer than the application.
+- Every migration has its own transaction containing both schema changes and the `schema_migrations` insert; failure or cancellation rolls back and prevents later migrations.
+- The migration interface includes an explicit `SqliteTransaction` parameter so every command is attached to the Runner-owned transaction.
+
+## Schema version 1
+
+- Runner creates `schema_migrations` with UTC ISO 8601 timestamps.
+- Migration001 creates: captures, ocr_regions, ocr_tokens, sentence_examples, vocabulary_entries, entry_examples, tags, entry_tags, review_cards, review_logs, and app_settings.
+- It creates the three required indexes: `ux_vocabulary_entries_normalized_active`, `ux_review_cards_entry_type`, and `ix_review_cards_due`.
+- Foreign-key enforcement, `RESTRICT` behavior, and unique/partial-unique constraints match the instruction and are exercised by tests.
+- `app_settings` is reserved only; M0-T04 JSON remains the active settings source and no synchronization was added.
 
 ## Validation
 
-- Initial baseline: clean worktree, M0-T03 commit `483dfe7` present, eight projects, no Godot process, build passed with 0 warnings/errors, tests 3/3 passed.
-- Infrastructure tests: 19/19 passed, including configuration, persistence, corrupt-file recovery, rolling, cleanup, concurrency, development mode, exceptions, and redaction.
-- Root solution tests: 21/21 passed; Godot and root solution builds passed with 0 warnings and 0 errors.
-- Godot 4.7.1 .NET headless editor build and launch passed.
-- Runtime `settings.json` parsed successfully with expected defaults; the current application log contains safe startup, settings-loaded, and normal-shutdown events.
-- Headless output confirmed service initialization, stable AppRoot initialization, default Dashboard navigation, and navigation initialization.
-- GUI follow-up fix: successful save feedback clears after two seconds; rapid toggles reset the timer so an older callback cannot clear newer feedback.
-- GUI verification passed: application startup, all six routes, settings controls, default-off state, enabled persistence after the first restart, disabled persistence after the second restart, layout, and error-free shutdown were confirmed.
-- Manual log review passed: startup, normal shutdown, and development-mode enabled/disabled events exist; no credential values, learning content, complete settings JSON, or obvious log flooding were found.
+- Baseline: clean worktree, M0-T04 commit `65f846f` present, eight projects, expected TFMs, no Godot process, build passed, tests 21/21 passed.
+- Infrastructure tests: 33/33 passed. Root total: 35/35 passed, 0 failed, 0 skipped.
+- Godot and the eight-project root solution build with 0 errors. Existing `NU1900` can occur while the NuGet vulnerability source is temporarily unreachable; Audit was not disabled.
+- An initial `NU1903` for the old SQLitePCLRaw 2.1.6 native dependency was resolved by pinning bundle 3.0.5, which supplies SQLite 3.53.4. Final NuGet Audit reports no known vulnerable packages.
+- Godot 4.7.1 .NET headless editor build passed and the native SQLite Provider loaded in runtime.
+- First headless launch created a 122,880-byte database and applied Migration 1.
+- Second headless launch reused the database, did not reapply Migration 1, and reported schema current 1.
+- Migration-applied event count is one; schema-current event count is two. Both launches initialized Dashboard/navigation and exited without a residual Godot process.
+- Temporary test databases, WAL/SHM sidecars, and directories were deleted successfully.
 
 ## Files changed
 
-- Added Application configuration/logging models and abstractions.
-- Added Infrastructure JSON configuration, rolling logger, options, and redactor.
-- Added Godot `AppServices`, Settings view script, generated UID files, and development-mode UI.
-- Added Infrastructure behavior tests and shared temporary-directory test helpers.
-- Modified `AppRoot.cs`, `SettingsView.tscn`, implementation status, and this handoff.
-- `docs/ENVIRONMENT.md` was not changed because no machine environment fact changed.
+- Added Infrastructure persistence and migration source files.
+- Added Infrastructure persistence tests.
+- Modified only the Infrastructure project package references and the Godot `AppServices`/`AppRoot` startup composition.
+- Updated implementation status and this handoff.
+- `docs/ENVIRONMENT.md` was not changed because package/schema facts are implementation facts, not machine environment changes.
 
-## Manual verification completed
+## Manual verification
 
-- Dashboard and all six navigation pages remained functional without page overlap.
-- The development-mode control and safety description were visible; the initial value was disabled.
-- Enabling and disabling showed successful save feedback and persisted across the required two restarts.
-- No C# exception, resource error, obvious layout failure, or residual Godot process was observed.
-- Logs contained startup, normal shutdown, and enabled/disabled events without credentials, learning text, OCR content, complete settings JSON, or obvious flooding.
+- Completed on 2026-08-01 and passed.
+- Both launches initialized normally; Dashboard, all six routes, Settings, logging, and development-mode persistence passed without regression.
+- No C#, resource, SQLite Provider, connection, migration, duplicate-table, or database-lock errors occurred.
+- `user://data/gamelexicon.db` exists and is nonzero; it does not appear in Git status.
+- Migration 1 was applied once, and the second launch reported schema current without reapplying it.
+- Logs contained no full connection string, database content, learning text, API key, token, or password.
+- The application closed normally and left no Godot process.
 
 ## Skills used and impact
 
 - Used: `project-routing`, `milestone-workflow`, `godot-workflow`, `skill-maintenance`.
-- Skill update required: No.
-- Reason: this is ordinary milestone implementation and does not change reusable routing, safety, path-source, or validation workflow.
+- Skill update required: No. The dependency security pin, migration transaction behavior, temporary-database cleanup, and two-run headless validation are M1-T01-specific implementation and acceptance facts; they do not change reusable routing or workflow guidance.
 
 ## Next allowed action
 
-- M0-T04 is complete and ready for the user to commit with UGit.
-- `M1-T01` remains Not Started and must not be executed automatically.
+- Review and commit the completed M1-T01 changes through UGit when approved.
+- `M1-T02` remains Not Started and must not be executed automatically.

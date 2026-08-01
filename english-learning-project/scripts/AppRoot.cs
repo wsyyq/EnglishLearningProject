@@ -1,41 +1,64 @@
+#nullable enable
+
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 public partial class AppRoot : Control
 {
     private readonly Dictionary<AppRoute, Button> _navigationButtons = new();
     private NavigationService _navigationService = null!;
+    private CancellationTokenSource? _startupCancellation;
 
-    public override void _Ready()
+    public override async void _Ready()
     {
+        var startupCancellation = new CancellationTokenSource();
+        _startupCancellation = startupCancellation;
+
         try
         {
             var userDataPath = ProjectSettings.GlobalizePath("user://");
-            AppServices.Initialize(userDataPath);
+            var databasePath = ProjectSettings.GlobalizePath("user://data/gamelexicon.db");
+            await AppServices.InitializeAsync(
+                userDataPath,
+                databasePath,
+                startupCancellation.Token);
+            startupCancellation.Token.ThrowIfCancellationRequested();
+
+            if (!IsInsideTree())
+            {
+                return;
+            }
+
             GD.Print("GameLexicon services initialized.");
+
+            GD.Print("GameLexicon AppRoot initialized.");
+
+            var routeHost = GetNodeOrNull<Control>("AppLayout/ContentHost/RouteHost")
+                ?? throw new InvalidOperationException("RouteHost is missing from App.tscn.");
+
+            _navigationService = new NavigationService(routeHost);
+            RegisterRoutes(_navigationService);
+            RegisterButtons();
+            Navigate(AppRoute.Dashboard);
+
+            GD.Print("GameLexicon navigation initialized.");
+        }
+        catch (OperationCanceledException) when (startupCancellation.IsCancellationRequested)
+        {
         }
         catch (Exception exception)
         {
             GD.PushError($"GameLexicon service initialization failed ({exception.GetType().Name}).");
-            throw;
         }
-
-        GD.Print("GameLexicon AppRoot initialized.");
-
-        var routeHost = GetNodeOrNull<Control>("AppLayout/ContentHost/RouteHost")
-            ?? throw new InvalidOperationException("RouteHost is missing from App.tscn.");
-
-        _navigationService = new NavigationService(routeHost);
-        RegisterRoutes(_navigationService);
-        RegisterButtons();
-        Navigate(AppRoute.Dashboard);
-
-        GD.Print("GameLexicon navigation initialized.");
     }
 
     public override void _ExitTree()
     {
+        _startupCancellation?.Cancel();
+        _startupCancellation?.Dispose();
+        _startupCancellation = null;
         AppServices.Shutdown();
     }
 

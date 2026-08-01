@@ -3,8 +3,12 @@
 using GameLexicon.Application.Abstractions;
 using GameLexicon.Infrastructure.Configuration;
 using GameLexicon.Infrastructure.Logging;
+using GameLexicon.Infrastructure.Persistence;
+using GameLexicon.Infrastructure.Persistence.Migrations;
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 public static class AppServices
 {
@@ -17,9 +21,13 @@ public static class AppServices
     public static IAppLogger Logger =>
         _logger ?? throw new InvalidOperationException("Application services are not initialized.");
 
-    public static void Initialize(string userDataPath)
+    public static async Task InitializeAsync(
+        string userDataPath,
+        string databasePath,
+        CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userDataPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
 
         if (_settingsService is not null || _logger is not null)
         {
@@ -30,6 +38,7 @@ public static class AppServices
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var settingsPath = Path.Combine(userDataPath, "config", "settings.json");
             var settingsService = new JsonAppSettingsService(settingsPath);
             var settings = settingsService.Load();
@@ -42,16 +51,37 @@ public static class AppServices
                 DevelopmentMode = settings.DevelopmentMode
             });
 
-            _settingsService = settingsService;
-            _logger = logger;
             logger.Information("App", "Startup", "Application started. Version=0.1.0");
             logger.Information(
                 "Configuration",
                 "Loaded",
                 $"Settings loaded. DevelopmentMode={(settings.DevelopmentMode ? "enabled" : "disabled")}");
+            logger.Information("Database", "InitializationStarted", "Database initialization started.");
+
+            var connectionFactory = new SqliteConnectionFactory(new DatabaseOptions
+            {
+                DatabasePath = databasePath,
+                EnableWriteAheadLogging = true,
+                BusyTimeoutMilliseconds = 5000
+            });
+            var migrationRunner = new MigrationRunner(
+                connectionFactory,
+                [new Migration001_Initial()],
+                logger: logger);
+            await migrationRunner.RunAsync(cancellationToken);
+            logger.Information("Database", "InitializationCompleted", "Database initialization completed.");
+
+            cancellationToken.ThrowIfCancellationRequested();
+            _settingsService = settingsService;
+            _logger = logger;
         }
-        catch
+        catch (Exception exception)
         {
+            logger?.Error(
+                "Database",
+                "InitializationFailed",
+                "Database initialization failed.",
+                exception);
             logger?.Dispose();
             _settingsService = null;
             _logger = null;

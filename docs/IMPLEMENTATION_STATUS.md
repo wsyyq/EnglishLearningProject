@@ -887,14 +887,41 @@ M0-T04 自动验收结果：
 - 日志人工检查：通过。启动、正常关闭及开发模式 enabled/disabled 事件存在；未发现 API Key、Token、密码、OCR、原句、词条、释义、笔记正文或完整设置 JSON；未发现明显日志刷屏。
 - Git 提交：未创建。
 
-下一任务：
+当前任务：
 
 ```text
 M1-T01：SQLite 连接和迁移
+状态：Done
+```
+
+M1-T01 自动验收结果：
+
+- 开始时间：2026-08-01 19:53 +08:00。
+- 前置基线：M0-T04 提交 `65f846f164a0bbce33d30dae021a06cc4a9bb0cb` 存在；初始工作区干净；M0-T04 为 Done；根解决方案为 8 个项目；无 Godot 进程；基线测试 21/21 通过。
+- SQLite Provider：`Microsoft.Data.Sqlite 8.0.29`，精确版本仅添加到 Infrastructure；未添加 EF Core、Dapper 或其他 ORM。
+- 原生运行时安全：显式锁定 `SQLitePCLRaw.bundle_e_sqlite3 3.0.5`，解析到 SQLite `3.53.4`；消除了旧传递依赖的高严重性 `NU1903`，最终 NuGet Audit 未发现已知易受攻击包。
+- 数据库逻辑路径：`user://data/gamelexicon.db`；物理路径仅由 Godot 组合根解析后传入 Infrastructure。
+- 连接策略：每次打开独立连接；启用 Foreign Keys、WAL、5000 ms Busy Timeout；不向 View 暴露连接，也不保留全局长连接。
+- 迁移接口采用显式 `SqliteTransaction` 参数，确保 Runner 创建的独立事务覆盖迁移 SQL 与版本记录；迁移不得自行提交。
+- 当前 schema version：1。Migration001 创建 `schema_migrations`、11 张 MVP 业务/预留表和 3 个指定索引；`app_settings` 仅预留，未接入 JSON 设置服务。
+- 迁移 Runner：版本正数/唯一/升序校验；每个迁移独立事务；失败回滚并停止；拒绝高于程序版本的数据库；不支持降级。
+- 自动化测试：35/35 通过，其中 Infrastructure 33/33；覆盖连接、PRAGMA、真实文件 WAL、幂等、排序、重复版本、失败回滚、高版本拒绝、取消、完整表/索引、外键与唯一约束，以及数据库和 sidecar 删除。
+- Godot 项目与 8 项目根解决方案构建成功，0 错误；仅保留已知的 NuGet 漏洞数据源网络警告 `NU1900`，未禁用 NuGet Audit。
+- Godot headless 编辑器构建通过；首次启动创建非零数据库并应用 Migration 1；第二次启动未重复迁移；日志中 Migration 1 applied 恰出现一次、schema current 1 出现两次。
+- 两次 headless 启动均完成服务、AppRoot、默认 Dashboard 与导航初始化；未出现 Provider、原生库、C# 或资源加载错误；最终无 Godot 进程。
+- GUI 人工验收：2026-08-01 通过。两次启动、默认 Dashboard、六个导航页面、设置/日志回归和开发模式持久化均正常；无 Provider、连接、迁移、重复建表、锁库、C# 或资源错误。
+- 数据库与日志人工核验：数据库存在且非零且未进入 Git；Migration 1 仅应用一次，第二次启动报告 schema current；日志未包含完整连接字符串、数据库内容、用户学习文本或凭据。
+- 进程人工核验：应用正常关闭，最终无残留 Godot 进程。
+- Git 提交：未创建。
+
+下一任务：
+
+```text
+M1-T02：文本规范化
 状态：Not Started
 ```
 
-不得自动执行 M1-T01。
+不得自动执行 M1-T02。
 
 ---
 
