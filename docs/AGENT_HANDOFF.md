@@ -2,52 +2,57 @@
 
 ## Current task
 
-- Task ID: `META-T01`
+- Task ID: `M0-T02`
 - Status: Done
-- Primary domain: Skill/Agent infrastructure
+- Primary domain: Godot
 - Primary agent: primary coordinator
-- Supporting agents: none; initial configuration is not loaded in the current session
+- Supporting agents: `godot_specialist`, `milestone_architect`, `skill_curator`
 
 ## Evidence reviewed
 
-- `AGENTS.md`, product/status documents, `docs/MT_INSTRUCTION/`, and META deployment instruction.
-- Existing Git status and allowed target paths.
-- Local Godot path existence, installed .NET SDKs, and Git version.
+- M0-T02 instruction, product/status/environment/decision documents, current Git baseline, and generated Godot project files.
+- Godot 4.7.1 Mono/.NET identity, x64 architecture, GodotSharp contents, .NET SDK 8/10, and actual CLI capabilities.
+- Build, test, headless scene loading, user GUI acceptance, project references, ignores, status, and diff scope.
 
 ## Decisions
 
-- Primary agent is the only default writer.
-- Four specialists remain read-only.
-- Machine paths live in `docs/ENVIRONMENT.md`, not Skills.
+- Preserve the Godot-generated `Godot.NET.Sdk/4.7.1` project and desktop `net8.0` target framework.
+- With explicit user authorization, align only Domain, Application, and Infrastructure to `net8.0`; tests and CaptureBridge remain `net10.0`.
+- Keep the Godot UI reference direction toward Application, Domain, and Infrastructure; no production layer references Godot.
 
 ## Files changed
 
-- Project Agent configuration, five project Skills, coordination documents, `AGENTS.md`, and status documentation only.
+- Added the Godot-generated C# project/local solution, minimal AppRoot script/UID, and App scene.
+- Added the Godot project to the root solution and set the main scene.
+- Updated three production-library target frameworks and M0-T02 status/environment/handoff documentation.
 
 ## Validation
 
-- TOML: 5 files parsed successfully with Python standard `tomllib`.
-- Skills: 5/5 passed equivalent frontmatter, uniqueness, nonempty body, and path-drift checks.
-- Routing: all four Agent and five Skill references resolve consistently.
-- Secrets: no credential assignment patterns found.
-- Git: final status/diff checks recorded in META-T01 completion report.
+- Godot C# project build: passed, 0 warnings and 0 errors.
+- Root solution restore/build: passed, 8 projects, 0 warnings and 0 errors.
+- Tests: 3 passed, 0 failed, 0 skipped.
+- Godot headless editor build and main-scene load passed; initialization message observed.
+- GUI manual acceptance passed; application closed with no residual Godot process.
+- Final Git status/diff/diff-check reviewed by the primary agent.
 
 ## Skills used
 
-- `skill-creator`
-- `project-routing` and `skill-maintenance` concepts deployed during this task
+- `project-routing`
+- `godot-workflow`
+- `milestone-workflow`
+- `skill-maintenance`
 
 ## Skill impact
 
-- Update required: Yes
-- Updated skills: five initial project Skills created
-- Reason: META-T01 establishes the reusable routing and maintenance workflow.
+- Update required: No
+- Updated skills: none
+- Reason: M0-T02 followed the existing reusable Godot workflow without changing routing, safety, stop conditions, or acceptance policy.
 
 ## Open blockers
 
-- New project configuration requires a restarted or new Codex session for reliable discovery.
-- M0-T02 remains unexecuted.
+- None for M0-T02 completion.
+- Release configuration was not separately validated; default Debug build was validated.
 
 ## Next allowed action
 
-- Stop after META-T01. Restart or open a new session, then perform the prescribed read-only routing verification. Do not automatically execute M0-T02.
+- `M0-T03`: Not Started. Do not execute automatically; wait for explicit user instruction.

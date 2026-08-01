@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AppRoot.cs" id="1_app_root"]
+
+[node name="AppRoot" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_app_root")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.09, 0.12, 1)
+mouse_filter = 2
+
+[node name="AppLayout" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Sidebar" type="PanelContainer" parent="AppLayout"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+
+[node name="ContentHost" type="MarginContainer" parent="AppLayout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ToastLayer" type="CanvasLayer" parent="."]
+
+[node name="ModalLayer" type="CanvasLayer" parent="."]
+
+[node name="GlobalLoadingOverlay" type="CanvasLayer" parent="."]

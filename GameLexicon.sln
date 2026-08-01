@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameLexicon.Application.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameLexicon.Infrastructure.Tests", "tests\GameLexicon.Infrastructure.Tests\GameLexicon.Infrastructure.Tests.csproj", "{8C2D59F7-F57B-49F1-8E00-ED7E777C9620}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "english-learning-project", "english-learning-project", "{BE9BC688-49E2-53CA-B716-C663E4EF3FD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnglishLearningProject", "english-learning-project\EnglishLearningProject.csproj", "{301BEBB0-5882-4254-921F-5C21586B9609}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -117,6 +121,18 @@ Global
 		{8C2D59F7-F57B-49F1-8E00-ED7E777C9620}.Release|x64.Build.0 = Release|Any CPU
 		{8C2D59F7-F57B-49F1-8E00-ED7E777C9620}.Release|x86.ActiveCfg = Release|Any CPU
 		{8C2D59F7-F57B-49F1-8E00-ED7E777C9620}.Release|x86.Build.0 = Release|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Debug|x64.Build.0 = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Debug|x86.Build.0 = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Release|x64.ActiveCfg = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Release|x64.Build.0 = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Release|x86.ActiveCfg = Debug|Any CPU
+		{301BEBB0-5882-4254-921F-5C21586B9609}.Release|x86.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -129,5 +145,6 @@ Global
 		{F579F8AD-8020-45FB-9DA4-74F1FFD02820} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{C6A04A3A-DA6C-411E-9A78-7CCCD4F542C8} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{8C2D59F7-F57B-49F1-8E00-ED7E777C9620} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{301BEBB0-5882-4254-921F-5C21586B9609} = {BE9BC688-49E2-53CA-B716-C663E4EF3FD1}
 	EndGlobalSection
 EndGlobal

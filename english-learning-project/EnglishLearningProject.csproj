@@ -1,0 +1,12 @@
+<Project Sdk="Godot.NET.Sdk/4.7.1">
+  <ItemGroup>
+    <ProjectReference Include="..\src\GameLexicon.Domain\GameLexicon.Domain.csproj" />
+    <ProjectReference Include="..\src\GameLexicon.Application\GameLexicon.Application.csproj" />
+    <ProjectReference Include="..\src\GameLexicon.Infrastructure\GameLexicon.Infrastructure.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+</Project>

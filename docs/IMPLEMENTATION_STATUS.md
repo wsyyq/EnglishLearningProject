@@ -344,14 +344,16 @@ GameLexicon.Infrastructure
 
 ---
 
-## 4. 当前任务（下一任务）
+## 4. 最近完成任务
 
 ### M0-T02：初始化 Godot .NET/C# 工程与基础主场景
 
 - Task ID：`M0-T02`
 - 名称：初始化 Godot .NET/C# 工程与基础主场景
-- 状态：`Blocked`
-- 阻塞原因：Godot 4.7.1 .NET 路径提示已更新，但尚未执行 M0-T02 环境验证，也尚未确认 C# 工程生成能力
+- 状态：`Done`
+- 开始时间：2026-08-01 17:50 +08:00
+- 完成时间：2026-08-01 18:25 +08:00
+- 阻塞状态：无
 - 前置任务：
   - `M0-T01` 完成
   - Godot .NET 环境验证完成
@@ -360,17 +362,17 @@ GameLexicon.Infrastructure
 
 开始 M0-T02 前，必须完成：
 
-- [ ] 确认 Godot 可执行文件的完整路径
-- [ ] 确认精确版本为 Godot 4.7.1
-- [ ] 确认使用支持 C# 的 Godot .NET 版本
-- [ ] 确认 Godot 与 `.NET SDK` 均为 64 位
-- [ ] 能使用指定 Godot 编辑器打开：
+- [x] 确认 Godot 可执行文件的完整路径
+- [x] 确认精确版本为 Godot 4.7.1
+- [x] 确认使用支持 C# 的 Godot .NET 版本
+- [x] 确认 Godot 与 `.NET SDK` 均为 64 位
+- [x] 能使用指定 Godot 编辑器打开：
   - `english-learning-project/project.godot`
-- [ ] 能在该工程中创建第一个 C# 脚本
-- [ ] 能由 Godot 自动生成 `.csproj`
-- [ ] 能使用 `.NET SDK` 构建 Godot 自动生成的 `.csproj`
-- [ ] 确认 Godot 自动生成的目标框架
-- [ ] 确认 Godot C# 项目可以加入根解决方案
+- [x] 能在该工程中创建第一个 C# 脚本
+- [x] 能由 Godot 自动生成 `.csproj`
+- [x] 能使用 `.NET SDK` 构建 Godot 自动生成的 `.csproj`
+- [x] 确认 Godot 自动生成的目标框架
+- [x] 确认 Godot C# 项目可以加入根解决方案
 
 ### 4.2 M0-T02 预期结果
 
@@ -386,6 +388,29 @@ M0-T02 预计负责：
 - 验证 Godot 工程可编译、可打开、可运行。
 
 不得在 M0-T01 中提前实施以上内容。
+
+### 4.3 M0-T02 完成结果
+
+- Godot 版本：`4.7.1.stable.mono.official.a13da4feb`，x64。
+- GodotSharp：`Api/` 与 `Tools/` 存在且非空。
+- 已安装 SDK：`.NET SDK 8.0.423`、`10.0.301`，主机架构 x64。
+- Godot 自动生成项目：`english-learning-project/EnglishLearningProject.csproj`。
+- Godot 本地解决方案：`english-learning-project/EnglishLearningProject.sln`。
+- Project SDK：`Godot.NET.Sdk/4.7.1`。
+- 桌面目标框架：`net8.0`；Android 条件目标框架：`net9.0`。
+- 经用户明确授权，将 Domain、Application、Infrastructure 三个生产类库从 `net10.0` 调整为 `net8.0`，未批量修改测试项目或 CaptureBridge。
+- 创建 `scripts/AppRoot.cs`、对应 Godot UID 文件和 `scenes/App.tscn`。
+- 主场景设置为 `res://scenes/App.tscn`。
+- Godot 项目引用 Application、Domain、Infrastructure；根解决方案共 8 个项目，无循环引用。
+- Godot C# 项目构建：成功，0 警告，0 错误。
+- 根解决方案 restore/build：成功，0 警告，0 错误。
+- 自动化测试：3/3 通过，0 失败，0 跳过。
+- Godot headless 编辑器构建与主场景加载：成功；输出 `GameLexicon AppRoot initialized.`。
+- GUI 人工验收：应用窗口、深色背景、左侧约 220px 占位区、右侧内容区、初始化输出均通过；无 C# 异常或资源错误，应用正常关闭且无残留 Godot 进程。
+- Git：`.godot/`、`bin/`、`obj/` 均被忽略；仅保留 M0-T02 源文件和必要项目配置变更；`git diff --check` 通过。
+- Skill Impact Review：无需更新 Skills、catalog 或 changelog。
+- 已知限制：根解决方案的 Release 配置未在本任务单独验证；本任务验证的是默认 Debug 构建。Godot GUI 视觉结果来自用户人工验收。
+- 执行的主要命令：Godot `--version`、`--help`、`--headless --editor --build-solutions --quit`、headless 主场景运行、`dotnet build`、`dotnet sln add/list`、`dotnet restore/build/test`、Git status/diff/diff-check。
 
 ---
 
@@ -417,7 +442,15 @@ D:\UGit\EnglishLearningProject\
    ├─ .godot\
    │  ├─ editor\
    │  ├─ imported\
+   │  ├─ mono\
    │  └─ shader_cache\
+   ├─ scenes\
+   │  └─ App.tscn
+   ├─ scripts\
+   │  ├─ AppRoot.cs
+   │  └─ AppRoot.cs.uid
+   ├─ EnglishLearningProject.csproj
+   ├─ EnglishLearningProject.sln
    ├─ icon.svg
    ├─ icon.svg.import
    └─ project.godot
@@ -438,14 +471,13 @@ english-learning-project/
 ```
 
 - 未发现嵌套 `.git` 仓库。
-- 根解决方案为 `GameLexicon.sln`，包含 7 个项目。
+- 根解决方案为 `GameLexicon.sln`，包含 8 个项目。
 - 当前有 Domain、Application、Infrastructure 三个普通 C# 类库项目。
 - 当前有三个 xUnit 测试项目，每个项目包含一个通过的 smoke test。
 - CaptureBridge 当前只有控制台项目骨架，没有实现平台功能。
-- 当前没有场景目录。
-- 当前没有脚本目录。
+- 当前有 M0-T02 创建的基础场景和最小 C# 主脚本。
 - 当前没有插件目录。
-- 当前 Godot 工程只有初始资源和配置文件。
+- 当前 Godot 工程已初始化为可构建、可运行的 Godot C# 工程。
 
 ---
 
@@ -475,6 +507,7 @@ config_version=5
 
 ```text
 4.7
+C#
 Mobile
 ```
 
@@ -500,25 +533,24 @@ Jolt Physics
 
 | 项目 | 当前状态 |
 |---|---|
-| Godot `.csproj` | 尚未生成 |
-| 根 `.sln` | 已生成；Godot 工程尚未加入 |
-| Godot C# 脚本 | 尚未创建 |
+| Godot `.csproj` | 已由 Godot 4.7.1 .NET 生成 |
+| 根 `.sln` | 已生成；包含 Godot 工程，共 8 个项目 |
+| Godot 本地 `.sln` | 已由 Godot 生成并保留 |
+| Godot C# 脚本 | `scripts/AppRoot.cs` |
 | GDScript 脚本 | 尚未创建 |
-| 场景目录 | 尚未创建 |
-| 脚本目录 | 尚未创建 |
+| 场景目录 | `scenes/App.tscn` |
+| 脚本目录 | 已创建 |
 | 插件目录 | 尚未创建 |
 
 ### 6.3 工程类型结论
 
-当前是一个尚未添加脚本的标准 Godot 工程。
+当前是一个已完成最小 C# 初始化的 Godot 4.7.1 .NET 工程。
 
 更准确的当前结论是：
 
-- 当前工程尚未初始化 Godot C# 项目文件。
-- 当前工程没有足够信息证明已成功配置为 Godot .NET/C# 工程。
-- 没有 `.csproj` 并不能单独证明安装的是非 .NET 版 Godot。
-- 需要使用指定的 Godot 4.7.1 .NET 编辑器创建或加载第一个 C# 脚本，才能完成 C# 工程环境验证。
-- Godot C# 初始化应在 `M0-T02` 中完成，不应在 `M0-T01` 中手工模拟。
+- Godot 自动生成 `EnglishLearningProject.csproj` 与本地解决方案。
+- Project SDK 为 `Godot.NET.Sdk/4.7.1`，桌面目标框架为 `net8.0`。
+- 基础 C# 项目、主场景、根解决方案集成、构建、headless 与 GUI 验证均已完成。
 
 ---
 
@@ -527,23 +559,20 @@ Jolt Physics
 | 工具 | 当前状态 |
 |---|---|
 | Godot | 命令不在 `PATH` |
-| Godot 安装目录 | `E:\SteamLibrary\steamapps\common\Godot Engine`（路径提示已提供，尚未验证） |
-| Godot .NET 主程序 | `E:\SteamLibrary\steamapps\common\Godot Engine\Godot_v4.7.1-stable_mono_win64.exe`（M0-T02 主验证程序，尚未验证） |
-| Godot .NET 控制台程序 | `E:\SteamLibrary\steamapps\common\Godot Engine\Godot_v4.7.1-stable_mono_win64_console.exe`（命令行及 headless 验证程序，尚未验证） |
-| Steam 启动兼容程序 | `E:\SteamLibrary\steamapps\common\Godot Engine\godot.windows.opt.tools.64.exe`（仅用于额外版本验证） |
-| Godot 精确版本 | 路径名称指向 4.7.1，实际版本尚未执行验证 |
-| Godot .NET 支持 | 路径名称指向 Mono 发行版，实际支持尚未执行验证 |
-| `.NET SDK` | `10.0.301` |
+| Godot 安装目录 | `E:\SteamLibrary\steamapps\common\Godot Engine`（已验证） |
+| Godot .NET 主程序 | `E:\SteamLibrary\steamapps\common\Godot Engine\Godot_v4.7.1-stable_mono_win64.exe`（已验证） |
+| Godot .NET 控制台程序 | `E:\SteamLibrary\steamapps\common\Godot Engine\Godot_v4.7.1-stable_mono_win64_console.exe`（已验证） |
+| Steam 启动兼容程序 | `E:\SteamLibrary\steamapps\common\Godot Engine\godot.windows.opt.tools.64.exe`（已验证） |
+| Godot 精确版本 | `4.7.1.stable.mono.official.a13da4feb` |
+| Godot .NET 支持 | 已由 Mono 标识、GodotSharp、C# 生成与构建验证 |
+| `.NET SDK` | `8.0.423`、`10.0.301` |
 | Git | `2.55.0.windows.3` |
 
 补充说明：
 
-- 已检测到 `.NET SDK 10.0.301`。
-- 当前尚未通过实际 Godot C# 项目构建验证兼容性。
-- 在 Godot 自动生成 `.csproj` 前，不应自行决定 Godot 项目的目标框架。
-- 不应手工把 Godot 项目目标框架固定为 `net10.0`。
-- M0-T02 应优先保留 Godot 自动生成的目标框架和项目设置。
-- M0-T01 创建的普通 C# 项目应选择能被当前 SDK 构建、并能在后续与 Godot 工程兼容的保守目标框架；实际选择必须由 Codex 在任务开始时说明。
+- Godot 自动生成项目使用 `Godot.NET.Sdk/4.7.1` 和桌面 `net8.0`。
+- Domain、Application、Infrastructure 经用户授权调整为 `net8.0` 并完成兼容构建。
+- 测试项目和 CaptureBridge 保持 `net10.0`。
 
 ---
 
@@ -670,7 +699,7 @@ docs/
 
 ### 10.1 Godot 编辑器版本
 
-状态：路径提示已更新，环境验证待执行
+状态：已在 M0-T02 验证完成
 
 M0-T02 应使用：
 
@@ -685,25 +714,17 @@ Steam 启动兼容程序（仅额外版本验证）：
 E:\SteamLibrary\steamapps\common\Godot Engine\godot.windows.opt.tools.64.exe
 ```
 
-本次仅更新路径提示，未启动 Godot，也未执行 M0-T02 环境验证。
-
-需要确认：
-
-- Godot 可执行文件完整路径。
-- 精确版本是否为 4.7.1。
-- 是否为 .NET 版本。
-- 是否能创建 C# 脚本。
-- 是否能自动生成 `.csproj`。
+三个程序均确认为 `4.7.1.stable.mono.official.a13da4feb` x64；GodotSharp、C# 项目生成、构建、headless 和 GUI 均已验证。
 
 处理阶段：
 
 ```text
-M0-T02 前
+M0-T02（Done）
 ```
 
 ### 10.2 Godot 目标框架
 
-状态：待确认
+状态：已确认
 
 规则：
 
@@ -713,15 +734,17 @@ M0-T02 前
 - 以 Godot 自动生成结果为准。
 - 再调整普通 C# 项目以保证兼容。
 
+实际结果：Godot 桌面目标为 `net8.0`；三个被引用的生产类库经用户授权最小调整为 `net8.0`。
+
 处理阶段：
 
 ```text
-M0-T02
+M0-T02（Done）
 ```
 
 ### 10.3 根 `.gitignore`
 
-状态：需在 M0-T01 中检查
+状态：已验证
 
 重点确认：
 
@@ -806,13 +829,22 @@ M0-T02 状态：Blocked
 M0-T01：创建解决方案与基础分层项目
 ```
 
-当前等待执行但仍处于阻塞状态：
+当前已完成：
 
 ```text
 M0-T02：初始化 Godot .NET/C# 工程与基础主场景
 ```
 
-M0-T01 已完成构建、测试、引用检查、Git diff 检查和状态更新。不得自动执行 M0-T02；应先确认 Godot 4.7.1 .NET 环境，再等待用户明确指令。
+M0-T02 已完成环境验证、Godot C# 初始化、基础场景、解决方案集成、构建、测试、headless 验证和 GUI 人工验收。
+
+下一任务：
+
+```text
+M0-T03：实现基础导航
+状态：Not Started
+```
+
+不得自动执行 M0-T03。
 
 ---
 
