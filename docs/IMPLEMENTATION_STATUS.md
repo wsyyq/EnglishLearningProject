@@ -964,8 +964,35 @@ M1-T03 自动验收结果：
 - 完成时间：2026-08-01 21:11 +08:00。
 - Git 提交：未创建。
 
-下一任务：M1-T04：持久化接口与查询契约。
-状态：Not Started。不得自动执行 M1-T04。
+当前任务：
+
+```text
+M1-T04：持久化接口与查询契约
+状态：Done
+```
+
+M1-T04 自动验收结果：
+
+- 开始时间：2026-08-01 21:27 +08:00。
+- 前置基线：M1-T03 提交 `decfb68cdf7990c84047d350a25f98606ec2a054` 存在；分支为 `main`；初始工作区干净；M1-T03 为 Done；解决方案为 8 个项目；目标框架未变化；无 Godot 进程；基线构建 0 警告、0 错误，测试 145/145 通过。
+- 在 Application 新增 `IVocabularyRepository`、`ISentenceExampleRepository`、`ITagRepository`；所有异步方法最后一个参数均为显式 `CancellationToken`。
+- `IVocabularyRepository` 精确保留产品规格四个核心方法；`FindByNormalizedHeadwordAsync` 明确仅查询活动词条；本轮未加入永久删除方法。
+- `SetPrimaryAsync` 明确定义为跨链接单一主要例句的后续原子事务；`SetForEntryAsync` 明确定义为标签关联的后续原子替换。
+- 新增不可变 `PagedResult<T>`、`VocabularySearchQuery`、归档筛选与排序枚举；PageNumber >= 1，PageSize 为 1～200。
+- 查询支持关键词、游戏、标签、EntryType 和归档状态；默认 ActiveOnly、UpdatedAtDescending、第 1 页、每页 50；不包含 M6 复习筛选。
+- Query 不 Trim、Form KC、小写或规范化调用方文本；TagIds 和所有读模型集合均防御性复制并拒绝重复 ID。
+- 新增 `VocabularyEntrySummary`、`VocabularyEntryDetails`、`SentenceExampleDetails`、`TagSummary`；详情允许无 Primary，拒绝多个 Primary，并按 SortOrder/Id 稳定排序例句。
+- 公共 Repository API 反射检查无 SQLite、Godot、Infrastructure、System.Data 或 IQueryable 类型；Application 仍只向下引用 Domain。
+- 新增 Application 测试用例 60 个；Application 测试最终 61/61 通过；8 项目根解决方案测试 205/205 通过，0 失败、0 跳过。
+- Application、Application.Tests 与根解决方案构建成功，0 警告、0 错误。
+- 未修改 Domain、Infrastructure、Migration001、数据库、Godot、任何 `.csproj` 或 NuGet 包；未实现 Migration002、Repository 实现、UseCase 或 UI。
+- 非 GUI 人工审查于 2026-08-01 完成并通过：Repository 范围、CancellationToken、公共 API 边界、活动词条查询、原子事务语义、不可变查询与读模型、防御性复制、校验规则及任务范围均确认通过。
+- GUI 验收不适用；未启动 Godot。
+- 完成时间：2026-08-01 21:33 +08:00。
+- Git 提交：未创建。
+
+下一任务：M1-T05：Migration002 手工例句与检索支持。
+状态：Not Started。不得自动执行 M1-T05。
 
 ---
 

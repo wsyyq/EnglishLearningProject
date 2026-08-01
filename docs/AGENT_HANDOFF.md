@@ -2,73 +2,75 @@
 
 ## Current task
 
-- Task ID: `M1-T03`
-- Name: Entry and sentence-example domain models
+- Task ID: `M1-T04`
+- Name: Persistence interfaces and query contracts
 - Status: Done
-- Primary domain: Domain / Entries
+- Primary domain: Application / Persistence Contracts
 - Primary agent: primary coordinator
 - Supporting agents: none
 
-## Scope implemented
+## Repository contracts
 
-- Added `EntryType`, `VocabularyEntry`, `SentenceExample`, `EntryExampleLink`, and `Tag` under `GameLexicon.Domain/Entries`.
-- Added an internal `EntryGuard` only to centralize identifier, required-text, and UTC validation.
-- Added five Domain test files under `GameLexicon.Domain.Tests/Entries`.
-- No Repository, DTO, query, SQL, migration, UseCase, Godot, UI, duplicate handling, sentence splitting, or target relocation was implemented.
+- Added `IVocabularyRepository` with exactly the four product-specification methods: active normalized-headword lookup, details, paged search, and save.
+- Added `ISentenceExampleRepository` for example reads/saves, link saves/removal, and an explicitly atomic `SetPrimaryAsync` operation.
+- Added `ITagRepository` for normalized-name lookup, idempotent get-or-create, entry tag reads, and atomic replacement through `SetForEntryAsync`.
+- Every asynchronous persistence method ends with a required `CancellationToken`.
+- Public Repository APIs expose only Domain types, Application query types, BCL types, Task, CancellationToken, and read-only collections.
+- No permanent-delete method was added; lifecycle extension remains deferred until M1-T09/M1-T13 requirements are implemented.
 
-## Domain invariants
+## Query contracts
 
-- `EntryType` values are fixed: Word=0, Phrase=1, Expression=2, SentencePattern=3; undefined values are rejected.
-- Entity and link identifiers reject `Guid.Empty`.
-- Required text rejects null, empty, and whitespace-only values without echoing content in production exceptions.
-- Persisted timestamps must have UTC offset zero. `VocabularyEntry.UpdatedAt` cannot precede `CreatedAt` or move backwards from its current value.
-- Mutation methods validate every argument before changing state, so failed updates leave the object unchanged.
-- Models accept already-normalized fields without duplicating M1-T02 normalization or modifying supplied text.
+- Added immutable `PagedResult<T>` with defensive item copies, long-safe page counts, and navigation flags.
+- Added immutable `VocabularySearchQuery` supporting search text, game title, tag IDs, optional EntryType, archive filter, sort order, page number, and page size.
+- Defaults are ActiveOnly, UpdatedAtDescending, page 1, size 50. Page size is limited to 1–200.
+- Search and game text are preserved exactly; the query rejects blank filters but performs no trimming, case conversion, Form KC, or normalization.
+- Tag IDs reject empty or duplicate values and are defensively copied.
+- No Review/M6 status filter exists.
 
-## Sentence-example rules
+## Read models
 
-- `CaptureId` is nullable so a manual example may exist without a screenshot; `OcrRegionId` requires a nonempty `CaptureId`.
-- `TargetStart` and `TargetLength` use .NET UTF-16 code-unit indices and `Substring` semantics.
-- Targets must be nonempty, in bounds, and must not split a UTF-16 surrogate pair.
-- Migration001 still has non-null `capture_id`; it was not modified. ADR-007 records that M1-T05 must resolve the mismatch with a new migration.
-- A single-primary invariant across multiple `EntryExampleLink` instances is deferred to the Repository transaction boundary.
-
-## Representative verification
-
-- Valid VocabularyEntry creation: passed; empty ID/headword, undefined EntryType, invalid UTC/order, and backwards updates were rejected.
-- Manual SentenceExample without Capture: passed; OCR without Capture and invalid source IDs were rejected.
-- Start, middle, end, and multiword UTF-16 ranges passed; out-of-range and surrogate-splitting ranges were rejected; an emoji prefix correctly placed `"Get out"` at UTF-16 index 3.
-- EntryExampleLink accepted SortOrder 0, rejected negative values, and allowed primary-state changes.
-- Tag accepted valid names, rejected empty normalized names, and preserved caller-provided rename values without normalizing them.
+- Added `VocabularyEntrySummary`, `VocabularyEntryDetails`, `SentenceExampleDetails`, and `TagSummary`.
+- Read models copy scalar state rather than retain mutable Domain entity references.
+- Collection inputs are defensively copied; duplicate tag/example IDs are rejected.
+- Details sort examples by SortOrder and Id, allow zero primary examples, and reject multiple primary examples.
+- Sentence details require matching Domain example/link IDs and copy manual-example nullable Capture state and UTF-16 target information.
 
 ## Validation
 
-- Baseline: clean worktree, M1-T02 commit `4793f73b175c9d72df7706616679b907149e6c0b` present, main branch, eight projects, expected TFMs, no Godot process, build 0 warnings/errors, tests 75/75.
-- Domain and Domain.Tests builds passed with 0 warnings and 0 errors.
-- Domain tests: 111/111 passed (70 added cases), 0 failed, 0 skipped.
+- Baseline: clean worktree, M1-T03 commit `decfb68cdf7990c84047d350a25f98606ec2a054` present, main branch, eight projects, expected TFMs, no Godot process, build 0 warnings/errors, tests 145/145.
+- Application and Application.Tests builds passed with 0 warnings and 0 errors.
+- Application tests: 61/61 passed (60 added cases), 0 failed, 0 skipped.
 - Eight-project root solution build passed with 0 warnings and 0 errors.
-- Root tests: 145/145 passed, 0 failed, 0 skipped.
+- Root tests: 205/205 passed, 0 failed, 0 skipped.
+- Reflection tests verify the four vocabulary methods, Task-based signatures, final CancellationToken parameters, and absence of SQLite, Godot, Infrastructure, System.Data, and IQueryable public types.
 - No restore or package change was required; NuGet Audit remains enabled.
 
 ## Files changed
 
-- Added six Domain files under `src/GameLexicon.Domain/Entries/`.
-- Added five Domain test files under `tests/GameLexicon.Domain.Tests/Entries/`.
-- Updated `docs/IMPLEMENTATION_STATUS.md`, `docs/DECISIONS.md`, and this handoff.
-- `docs/ENVIRONMENT.md` was not changed because no machine environment fact changed.
+- Added three interfaces under `src/GameLexicon.Application/Abstractions/Persistence/`.
+- Added eight query/read-model files under `src/GameLexicon.Application/Entries/Queries/`.
+- Added four Application test files covering public contracts, paging, search queries, and read models.
+- Updated `docs/IMPLEMENTATION_STATUS.md` and this handoff.
+- `docs/DECISIONS.md` and `docs/ENVIRONMENT.md` were not changed because no new durable policy or machine environment fact was introduced.
+
+## Scope exclusions
+
+- No Domain, Infrastructure, migration, database, Godot, project-reference, or package change.
+- No Migration002, SQL, Repository implementation, UseCase, dependency registration, UI, or Review/M6 query behavior.
+- M1-T05 was not executed.
 
 ## Skills used and impact
 
 - Used: `project-routing`, `milestone-workflow`, `skill-maintenance`.
-- Skill update required: No. The Guid, UTC, UTF-16 range, and atomic-mutation rules are M1-T03 domain decisions already captured in task documentation and ADR-007; reusable routing and workflow guidance did not change.
+- Skill update required: No. M1-T04 adds ordinary Application persistence and query contracts; reusable routing, workflow steps, safety rules, and acceptance procedures did not change.
 
 ## Manual verification
 
 - Non-GUI review completed on 2026-08-01 and passed; GUI verification was not applicable and Godot was not launched.
-- The user confirmed the five-model scope, fixed enum values, Guid/UTC/timestamp invariants, atomic mutations, nullable Capture/OCR source rule, UTF-16 and surrogate boundaries, exception privacy, and dependency boundaries.
-- The user confirmed Domain tests passed 111/111, root tests passed 145/145, Migration001 was unchanged, ADR-007 is retained, and no Migration002, Repository, UseCase, Godot, or UI work was included.
+- The user confirmed interface scope, active lookup semantics, CancellationToken coverage, public API boundaries, atomic primary/tag semantics, immutable paging/query/read models, defensive copies, validation behavior, no-normalization behavior, and scope exclusions.
+- The user confirmed Application tests passed 61/61, root tests passed 205/205, and the Git modification scope contains only M1-T04 work.
 
 ## Next allowed action
 
-- Review and commit the completed M1-T03 changes through UGit when approved.
-- `M1-T04: Persistence interfaces and query contracts` remains Not Started and must not be executed automatically.
+- Review and commit the completed M1-T04 changes through UGit when approved.
+- `M1-T05: Migration002 manual examples and query support` remains Not Started and must not be executed automatically.
