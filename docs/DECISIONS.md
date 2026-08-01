@@ -47,3 +47,11 @@
 - Decision: after changing AGENTS, Agent TOML, or Skills, tell the user to restart or open a new Codex session.
 - Reason: current-session hot reload is not guaranteed.
 - Consequence: do not claim new routing is fully active until a new session verifies it.
+
+## ADR-007: Manual sentence examples may omit capture identity
+
+- Status: Accepted
+- Context: manually entered examples may exist without screenshots, while `Migration001` currently requires `sentence_examples.capture_id`.
+- Decision: `SentenceExample.CaptureId` is nullable in Domain; an OCR region still requires a nonempty capture identifier. Do not modify `Migration001`.
+- Reason: the Domain model must represent the product capability rather than inherit a temporary persistence limitation.
+- Consequence: M1-T05 must align SQLite through a new migration before capture-free examples can be persisted.

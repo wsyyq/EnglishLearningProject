@@ -938,8 +938,34 @@ M1-T02 自动验收结果：
 - 完成时间：2026-08-01 20:48 +08:00。
 - Git 提交：未创建。
 
-下一任务：待 milestone_architect 根据产品规格拆分。
-状态：Not Started。不得自动执行后续任务。
+当前任务：
+
+```text
+M1-T03：词条与例句领域模型
+状态：Done
+```
+
+M1-T03 自动验收结果：
+
+- 开始时间：2026-08-01 21:06 +08:00。
+- 前置基线：M1-T02 提交 `4793f73b175c9d72df7706616679b907149e6c0b` 存在；分支为 `main`；初始工作区干净；M1-T01/M1-T02 为 Done；解决方案为 8 个项目；目标框架未变化；无 Godot 进程；基线构建 0 警告、0 错误，测试 75/75 通过。
+- 在 `GameLexicon.Domain/Entries` 新增 `EntryType`、`VocabularyEntry`、`SentenceExample`、`EntryExampleLink`、`Tag` 和仅用于复用参数校验的内部 `EntryGuard`。
+- `EntryType` 显式固定为 Word=0、Phrase=1、Expression=2、SentencePattern=3；实体和链接 ID 均拒绝 `Guid.Empty`。
+- 持久时间统一采用拒绝非 UTC 的策略；`VocabularyEntry.UpdatedAt` 不得早于 `CreatedAt` 或当前 `UpdatedAt`。
+- `SentenceExample` 使用 .NET UTF-16 索引及 `Substring` 语义，并拒绝越界或切断代理项的目标范围。
+- Domain 中 `CaptureId` 为 `Guid?`；无 Capture/OCR 的手工例句合法；`OcrRegionId` 有值时必须存在非空 `CaptureId`。
+- 所有更新方法先验证全部输入再修改状态；测试验证失败不会留下部分修改。
+- 模型只接收并验证已提供的规范化字段，不重复实现或调用 M1-T02 规范化规则；不记录词头、例句、释义、标签或笔记。
+- 新增 Domain 测试用例 70 个；Domain 测试最终 111/111 通过；8 项目根解决方案测试 145/145 通过，0 失败、0 跳过。
+- Domain、Domain.Tests 与根解决方案构建成功，0 警告、0 错误。
+- 未修改 Migration001、数据库、Godot、Application、Infrastructure、任何 `.csproj` 或 NuGet 包；未实现 Migration002、Repository、UseCase 或 UI。
+- 非 GUI 人工审查：2026-08-01 通过。五个模型、固定枚举值、Guid/UTC/时间顺序、UTF-16 与代理项边界、Capture/OCR 来源、原子更新、异常隐私和依赖边界均确认通过。
+- 人工范围审查：Domain 111/111、根解决方案 145/145；Migration001 未修改；ADR-007 保留；未实现 Migration002、Repository、UseCase 或 UI；diff 仅属于 M1-T03。
+- 完成时间：2026-08-01 21:11 +08:00。
+- Git 提交：未创建。
+
+下一任务：M1-T04：持久化接口与查询契约。
+状态：Not Started。不得自动执行 M1-T04。
 
 ---
 
