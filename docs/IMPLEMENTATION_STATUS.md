@@ -1051,8 +1051,39 @@ M1-T06 自动验收结果：
 - 完成时间：2026-08-02。
 - Git 提交：未创建。
 
-下一任务：M1-T07：SQLite 标签 Repository。
-状态：Not Started。不得自动执行 M1-T07。
+当前任务：
+
+```text
+M1-T07：SQLite 标签 Repository
+状态：Done
+```
+
+M1-T07 自动验收结果：
+
+- 开始时间：2026-08-02 14:32 +08:00。
+- 前置基线：M1-T06 提交 `8c9233ae23b3249f0b6ac7dec8dbae56bf54e92c` 存在；当前 HEAD 另含已提交的 M1-T07 指令更新 `cfb9ff9`；分支为 `main`；初始工作区干净；M1-T06 为 Done、M1-T07 为 Not Started；解决方案为 8 个项目；目标框架未变化；无 Godot 进程；基线构建 0 警告、0 错误，测试 230/230 通过。
+- 新增 `SqliteTagRepository`，仅位于 Infrastructure，并完整实现未修改的 `ITagRepository` 四个方法；构造函数只依赖 `SqliteConnectionFactory`，每次调用按需打开并释放连接。
+- `FindByNormalizedNameAsync` 使用参数化精确相等查询和显式列；不 Trim、不改变大小写、不使用 NOCASE/LOWER/LIKE，也不调用文本规范化；找不到返回 null。
+- `GetOrCreateAsync` 在单事务中使用指定的 `ON CONFLICT(normalized_name) DO NOTHING` 后精确读取持久化 Tag；已有标签的 Id 与 Name 不被覆盖；无关主键冲突不会被忽略。
+- 两个独立 Repository/连接以不同 Id/Name、相同 NormalizedName 真实并发调用通过：两次均返回同一个持久化 Tag，数据库最终只有一行。
+- `GetForEntryAsync` 使用显式 join 列，按 NormalizedName、Id 稳定排序，返回只读防御性复制；Entry 不存在或无标签均返回空列表。
+- `SetForEntryAsync` 在第一次 await 前完成 EntryId 校验、tagIds 快照、空 ID 和重复 ID 拒绝；随后在单事务中验证 Entry 与全部 Tag、删除旧关联并插入完整新集合。
+- 空列表会在验证 Entry 存在后清空关联；缺失 Entry/Tag 完整失败；不自动创建缺失 Tag、不删除未使用 Tag、不修改其他 Entry。
+- 测试 trigger 在删除旧关联后阻止新关联插入，事务完整回滚并恢复原集合；预取消不会留下部分写入。
+- 数据映射使用小写 D 格式 GUID，Name 与 NormalizedName 原样读写；坏 GUID、空白 Name 或空白 NormalizedName 被视为损坏并安全失败，异常不包含原始行值。
+- 所有 SQL 值均参数化；未使用 `SELECT *`、`INSERT OR IGNORE`、`INSERT OR REPLACE`、`REPLACE INTO` 或 SQL 文本规范化；Repository 不注入 Logger、不记录标签文本或参数值。
+- 新增 Infrastructure 测试 16 个；Infrastructure 测试最终 74/74 通过；根解决方案测试 246/246 通过：Domain 111、Application 61、Infrastructure 74，0 失败、0 跳过。
+- 测试使用真实临时 SQLite 文件并依次运行 Migration001、Migration002；覆盖精确查找、损坏数据、幂等/并发创建、主键冲突、稳定读取、原子替换、快照、回滚、取消、数据库约束、级联行为及数据库/WAL/SHM 可删除。
+- 根解决方案构建成功，0 警告、0 错误；未启动 Godot，最终无 Godot 进程。
+- Migration001 哈希保持 `1fd5546081fe87c479ebd21d52e26f7d1dfaa636`；Migration002 哈希保持 `d8ce250e24442ece38c231e3ae8286a4d0def4c5`；两迁移均未修改。
+- 未修改 Domain、Application、M1-T06 Repository、Godot、项目引用、目标框架或 NuGet 包；未实现词条 Repository、UseCase 或 UI。
+- 非 GUI 人工审查于 2026-08-02 完成并通过：Repository 层级、四方法契约、连接与资源生命周期、参数化 SQL、精确查找、并发 GetOrCreate、冲突语义、稳定读取、输入快照、原子替换与回滚、缺失行处理、取消传播、损坏数据处理、日志安全、迁移哈希、测试结果及任务范围均确认通过。
+- GUI 验收不适用；Godot 未启动。
+- 完成时间：2026-08-02。
+- Git 提交：未创建。
+
+下一任务：M1-T08：SQLite 词条 Repository 写侧。
+状态：Not Started。不得自动执行 M1-T08。
 
 ---
 
