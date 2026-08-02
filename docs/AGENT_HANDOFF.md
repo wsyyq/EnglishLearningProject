@@ -2,79 +2,65 @@
 
 ## Current task
 
-- Task ID: `M1-T05`
-- Name: Migration002 manual examples and search support
+- Task ID: `M1-T06`
+- Name: SQLite sentence-example Repository
 - Status: Done
-- Primary domain: Infrastructure / Persistence / Migration
+- Primary domain: Infrastructure / Persistence / Sentence Examples
 - Primary agent: primary coordinator
-- Supporting agents: milestone architect and Godot specialist, both read-only
+- Supporting agent: milestone architect, read-only
 
-## Migration contract
+## Repository implementation
 
-- Added `Migration002_ManualExamplesAndSearchSupport` with Version 2.
-- Migration001 is unchanged; its initial and final Git Blob hash is `1fd5546081fe87c479ebd21d52e26f7d1dfaa636`.
-- The migration uses only the `MigrationRunner` transaction and never disables foreign keys or commits independently.
-- `entry_examples` is copied to a no-FK backup, the child table is dropped, `sentence_examples` is rebuilt, and the child table is recreated and restored in the same transaction.
-- Example and link row counts are checked before return, followed by `PRAGMA foreign_key_check`.
-- Reserved Migration002 temporary objects cause a safe failure and never get silently deleted.
+- Added `SqliteSentenceExampleRepository` in Infrastructure and implemented all six unchanged `ISentenceExampleRepository` methods.
+- Uses `SqliteConnectionFactory`; no connection, command, reader, or transaction is retained between calls.
+- All SQL values are parameters, all reads list columns explicitly, and write operations use explicit transactions.
+- GUIDs use lowercase D format and timestamps use the existing invariant seven-fraction UTC format.
+- Corrupt GUID, timestamp, primary flag, target range, source combination, or sort order fails with a safe data exception and is never repaired or skipped.
 
-## Version 2 schema
+## Method semantics
 
-- `sentence_examples.capture_id` is nullable.
-- A CHECK constraint rejects an OCR region without a capture while allowing manual, capture-only, and Capture/OCR examples.
-- All ten existing sentence columns, defaults, foreign keys, and deletion behaviors remain unchanged.
-- `entry_examples` preserves its four columns, defaults, composite primary key, and two cascade foreign keys.
-- Added exactly the six required indexes for archive/update ordering, type filtering, entry-example ordering and reverse lookup, tag filtering, and game/creation ordering.
-- No FTS, contains-search structure, optional Capture/OCR index, Repository SQL, or other business schema was added.
-
-## Runtime registration
-
-- `AppServices` registers Migration001 followed by Migration002.
-- No other Godot script, scene, project reference, target framework, or package changed.
-- The existing user database was backed up outside `user://data` before runtime migration.
+- `GetByIdAsync` reads only `sentence_examples` and returns null when absent.
+- `GetForEntryAsync` joins links and examples, orders by SortOrder then ExampleId, and returns a read-only collection of existing `SentenceExampleDetails`.
+- `SaveAsync` uses `ON CONFLICT(id) DO UPDATE`, writes all ten fields, and preserves existing links.
+- `SaveLinkAsync` safely upserts Primary and SortOrder without saving related entities or clearing other Primary links.
+- `SetPrimaryAsync` verifies the target, clears peer Primary flags, and sets the target in one transaction; a missing target preserves prior state.
+- `RemoveLinkAsync` is idempotent and removes only the exact link, allowing zero Primary links.
 
 ## Validation
 
-- Infrastructure tests: 40/40 passed, including 7 new Migration002 tests.
-- Root solution tests: 212/212 passed (Domain 111, Application 61, Infrastructure 40).
-- Root solution build, including the Godot C# project: 0 warnings and 0 errors.
-- v1 seeded examples and links retained every asserted field; tags and tag links remained unchanged.
-- A conflicting required index caused failure after table DDL, and the Runner restored the v1 table shape, data, links, temporary objects, and migration version atomically.
-- Temporary database, WAL, SHM, and directory deletion passed.
-- Two Godot 4.7.1 .NET headless application starts passed; logs show Migration 2 once and schema current 2 twice.
-- Runtime database: Version 2 exactly once, capture_id nullable, foreign-key violations 0, temporary objects 0, required indexes 6.
-- Final Godot process count: zero.
-
-## Known validation limitation
-
-- The dedicated Godot editor command with `--build-solutions` did not exit on this machine, with or without `--quit-after 5`; each attempt had no output and zero CPU before timeout. Only the exact processes started by this task were terminated.
-- This does not affect the successful root build, which compiled the Godot project, or the two successful headless application starts. It remains explicit evidence for manual review rather than being reported as a passing editor-build command.
+- Added 18 Infrastructure test cases; Infrastructure tests pass 58/58.
+- Root solution tests pass 230/230: Domain 111, Application 61, Infrastructure 58.
+- Root build passes with 0 warnings and 0 errors.
+- Tests use real temporary SQLite files migrated through Version 1 and 2.
+- Covered manual/Capture/OCR and UTF-16 round trips, null mapping, missing and empty IDs, pre-cancellation, updates, link preservation, FK rollback, corrupt-row rejection, stable ordering, atomic Primary selection, idempotent removal, and file/sidecar deletion.
+- Static audit found no `SELECT *`, REPLACE statement, input normalization, current-time use, or SQL value interpolation.
+- Migration001 hash remains `1fd5546081fe87c479ebd21d52e26f7d1dfaa636`; Migration002 hash remains `d8ce250e24442ece38c231e3ae8286a4d0def4c5`.
+- Godot was not launched and no Godot process remains.
 
 ## Files changed
 
-- Added `src/GameLexicon.Infrastructure/Persistence/Migrations/Migration002_ManualExamplesAndSearchSupport.cs`.
-- Added `tests/GameLexicon.Infrastructure.Tests/Persistence/Migration002ManualExamplesAndSearchSupportTests.cs`.
-- Modified only the migration registration line in `english-learning-project/scripts/AppServices.cs`.
+- Added `src/GameLexicon.Infrastructure/Persistence/Repositories/SqliteSentenceExampleRepository.cs`.
+- Added `tests/GameLexicon.Infrastructure.Tests/Persistence/Repositories/SqliteSentenceExampleRepositoryTests.cs`.
 - Updated `docs/IMPLEMENTATION_STATUS.md` and this handoff.
-- `docs/DECISIONS.md` and `docs/ENVIRONMENT.md` were not changed because ADR-007 already governs nullable Capture identity and no environment fact changed.
+- `docs/DECISIONS.md` and `docs/ENVIRONMENT.md` were not changed because no durable policy or environment fact changed.
 
 ## Scope exclusions
 
-- No Migration001, MigrationRunner, Domain, Application, Repository, query SQL, UseCase, UI, project reference, target framework, or NuGet change.
-- No Migration003 and no M1-T06 work.
+- No interface, Domain, migration, Godot, project reference, target framework, or package change.
+- No Vocabulary/Tag Repository, UseCase, UI, Migration003, or M1-T07 work.
 
 ## Skills used and impact
 
-- Used: `project-routing`, `milestone-workflow`, `godot-workflow`, `skill-maintenance`.
-- Skill update required: No. The transaction, backup, and headless verification procedures were already specified by the active task and existing Skills; no reusable routing or workflow policy changed.
+- Used: `project-routing`, `milestone-workflow`, `skill-maintenance`.
+- Skill update required: No. M1-T06 adds an ordinary Infrastructure Repository implementation without changing reusable routing, workflow, or safety guidance.
 
 ## Manual verification
 
-- Non-GUI review completed on 2026-08-01 and passed; GUI verification was not applicable.
-- The user confirmed Migration001 immutability, transaction ownership, lossless table reconstruction, row-count and foreign-key checks, source constraints, rollback behavior, six-index minimality, runtime registration, idempotence, file cleanup, test coverage, and task scope.
-- The user confirmed the two actual Godot headless starts passed and accepted the separately recorded `--build-solutions` non-exit limitation as accurate evidence.
+- GUI verification is not applicable and Godot was not launched.
+- Non-GUI review completed and passed on 2026-08-02.
+- The review confirmed SQL safety, connection and resource lifetime, mapping, UPSERT behavior, transaction atomicity and rollback, corruption handling, cancellation propagation, test coverage, migration integrity, logging safety, and scope exclusions.
 
 ## Next allowed action
 
-- Review and commit the completed M1-T05 changes through UGit when approved.
-- `M1-T06: SQLite Repository implementation` remains Not Started and must not be executed automatically.
+- Commit the completed M1-T06 changes with UGit after reviewing the final diff.
+- `M1-T07: SQLite Tag Repository` remains Not Started and was not executed in this task.

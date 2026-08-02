@@ -1022,8 +1022,37 @@ M1-T05 自动验收结果：
 - 完成时间：2026-08-01 22:29 +08:00。
 - Git 提交：未创建。
 
-下一任务：M1-T06：SQLite Repository 实现。
-状态：Not Started。不得自动执行 M1-T06。
+当前任务：
+
+```text
+M1-T06：SQLite 例句 Repository
+状态：Done
+```
+
+M1-T06 自动验收结果：
+
+- 开始时间：2026-08-02 13:57 +08:00。
+- 前置基线：M1-T05 提交 `52160ac85ba27362f7bea76feec49e6d2036cc93` 存在；分支为 `main`；初始工作区干净；M1-T05 为 Done；解决方案为 8 个项目；目标框架未变化；无 Godot 进程；基线构建 0 警告、0 错误，测试 212/212 通过。
+- 新增 `SqliteSentenceExampleRepository`，仅位于 Infrastructure，并完整实现现有 `ISentenceExampleRepository` 六个方法；接口未修改。
+- Repository 仅依赖 `SqliteConnectionFactory`，每次操作按需打开并释放连接；所有异步打开、事务、命令、读取、提交均传播 CancellationToken。
+- `GetByIdAsync` 与 `GetForEntryAsync` 使用显式列和稳定排序；读取损坏 GUID、UTC、布尔、目标范围或 SortOrder 时安全失败，不返回部分对象或自动修复。
+- `SaveAsync` 与 `SaveLinkAsync` 使用参数化 `ON CONFLICT ... DO UPDATE` 和显式事务；未使用 `SELECT *`、`INSERT OR REPLACE` 或 `REPLACE INTO`。
+- 更新例句不会删除已有 `entry_examples`；SaveLink 不会自动清除其他 Primary。
+- `SetPrimaryAsync` 在单事务中先验证目标链接，再清除同词条其他 Primary 并设置目标；目标不存在时回滚并保持原 Primary 与 SortOrder。
+- `RemoveLinkAsync` 幂等且只删除关联，不删除例句、词条、Capture 或文件，也不自动重选 Primary。
+- GUID 写入使用小写 D 格式，时间使用固定 UTC ISO 8601 格式；nullable Capture/OCR/GameTitle 正确映射；Domain nullable ScreenshotCropPath 稳定映射为数据库合法空字符串。
+- 新增 Infrastructure 测试 18 个；Infrastructure 测试最终 58/58 通过；根解决方案测试 230/230 通过，0 失败、0 跳过。
+- 测试覆盖手工/Capture/OCR 与 UTF-16 往返、缺失/空 ID/预取消、更新保留链接、FK 失败回滚、损坏数据拒绝、链接 UPSERT 与多 Primary 暂态、稳定只读排序、SetPrimary 原子性、RemoveLink 幂等及数据库/WAL/SHM 可删除。
+- 根解决方案构建成功，0 警告、0 错误；未启动 Godot。
+- Migration001 哈希保持 `1fd5546081fe87c479ebd21d52e26f7d1dfaa636`；Migration002 哈希保持 `d8ce250e24442ece38c231e3ae8286a4d0def4c5`；两迁移均未修改。
+- 未修改 Domain、Application、Godot、项目引用、目标框架或 NuGet 包；未实现词条/标签 Repository、UseCase 或 UI。
+- 非 GUI 人工审查于 2026-08-02 完成并通过：Repository 层级和依赖、六方法契约、连接生命周期、参数化 SQL、显式列、安全 UPSERT、GUID/UTC 与 nullable 映射、查询语义、链接保留、外键失败回滚、Primary 原子切换、幂等删除、损坏数据处理、取消传播、资源释放、日志安全、迁移哈希、测试结果和任务范围均确认通过。
+- GUI 验收不适用；Godot 未启动。
+- 完成时间：2026-08-02。
+- Git 提交：未创建。
+
+下一任务：M1-T07：SQLite 标签 Repository。
+状态：Not Started。不得自动执行 M1-T07。
 
 ---
 
