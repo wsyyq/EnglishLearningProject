@@ -1082,8 +1082,39 @@ M1-T07 自动验收结果：
 - 完成时间：2026-08-02。
 - Git 提交：未创建。
 
-下一任务：M1-T08：SQLite 词条 Repository 写侧。
-状态：Not Started。不得自动执行 M1-T08。
+当前任务：
+
+```text
+M1-T08：SQLite 词条 Repository 写侧
+状态：Done
+```
+
+M1-T08 自动验收结果：
+
+- 开始时间：2026-08-02 14:47 +08:00。
+- 前置基线：M1-T07 提交 `bdb8a3ebc05762c5a0f52088e90246f20fd2739d` 存在；当前 HEAD 另含已提交的 M1-T08 指令更新 `cde8ef3`；分支为 `main`；初始工作区干净；M1-T07 为 Done、M1-T08 为 Not Started；解决方案为 8 个项目；目标框架未变化；无 Godot 进程；基线构建 0 警告、0 错误，测试 246/246 通过。
+- 新增 `public sealed partial class SqliteVocabularyRepository` 写侧；本轮未声明实现完整 `IVocabularyRepository`，且没有添加 Find/GetDetails/Search 占位或伪实现。
+- 公开 `SaveAsync(VocabularyEntry entry, CancellationToken cancellationToken)` 与现有接口写方法的参数、返回类型和 CancellationToken 位置一致；构造函数只依赖 `SqliteConnectionFactory`，每次调用按需打开并释放连接。
+- SaveAsync 在单一事务中按 Id 显式读取 `created_at_utc`、`updated_at_utc`；不存在时 Insert 全部 12 列，存在时仅 Update 可变字段、归档状态和 UpdatedAt，不更新 Id 或 CreatedAt。
+- 更新要求传入 CreatedAt 与数据库严格相等，并拒绝早于数据库值的 UpdatedAt；相同 UpdatedAt 允许幂等保存。损坏、非 UTC 或次序矛盾的存储时间会安全失败，不自动修复或使用当前时间。
+- GUID 使用小写 D 格式；EntryType 显式映射 0～3；五个 nullable 文本按 null/DBNull 原样映射；IsArchived 使用 0/1；时间使用既有七位精度 UTC 格式。
+- Repository 不 Trim、不改变大小写、不执行 Form KC、不重新计算 NormalizedHeadword、不生成时间；所有 SQL 值参数化，读取使用显式列，未使用 `SELECT *`、`INSERT OR REPLACE` 或 `REPLACE INTO`。
+- 活动词条唯一索引验证通过：两个不同 Active 同名冲突；Active 与 Archived 同名、多个 Archived 同名允许；归档释放唯一名；恢复冲突完整回滚并保持原字段、归档状态、时间与关联。
+- 更新、归档和恢复均原位 Update；`entry_examples`、`is_primary`、`sort_order`、例句本体、`entry_tags` 和 Tag 本体完整保留。
+- 两个独立 Repository/连接以不同 Id、相同 NormalizedHeadword 并发保存 Active 词条，恰一成功且最终仅一行；该并发测试额外重复 5 次均通过。
+- Trigger 中途阻止 Update 时事务完整回滚；CreatedAt 不一致、UpdatedAt 倒退、唯一冲突、损坏时间和预取消均不会留下部分写入或删除关联。
+- 新增 Infrastructure 测试 20 个；Infrastructure 测试最终 94/94 通过；根解决方案测试 266/266 通过：Domain 111、Application 61、Infrastructure 94，0 失败、0 跳过。
+- 测试使用真实临时 SQLite 文件并依次运行 Migration001、Migration002；数据库、WAL、SHM 和临时目录可删除。
+- 根解决方案构建成功，0 警告、0 错误；未启动 Godot，最终无 Godot 进程。
+- Migration001 哈希保持 `1fd5546081fe87c479ebd21d52e26f7d1dfaa636`；Migration002 哈希保持 `d8ce250e24442ece38c231e3ae8286a4d0def4c5`；两迁移均未修改。
+- 未修改 IVocabularyRepository、VocabularyEntry、EntryType、Domain、Application、现有例句/标签 Repository、Godot、项目引用、目标框架或 NuGet 包；未实现查询侧、UseCase 或 UI。
+- 非 GUI 人工审查于 2026-08-02 完成并通过：Infrastructure 层级、partial 类型边界、SaveAsync 精确签名、连接与资源生命周期、参数化 SQL、Insert/Update 字段映射、CreatedAt 与 UpdatedAt 保护、归档生命周期、活动唯一索引、并发冲突、两类关联保护、trigger 回滚、取消传播、损坏时间处理、日志安全、迁移哈希、测试结果和任务范围均确认通过。
+- GUI 验收不适用；Godot 未启动。
+- 完成时间：2026-08-02。
+- Git 提交：未创建。
+
+下一任务：M1-T09：SQLite 查询与生命周期。
+状态：Not Started。不得自动执行 M1-T09。
 
 ---
 
