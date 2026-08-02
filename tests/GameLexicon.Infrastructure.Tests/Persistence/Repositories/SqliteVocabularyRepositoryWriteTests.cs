@@ -13,20 +13,17 @@ public sealed class SqliteVocabularyRepositoryWriteTests
     private static readonly DateTimeOffset UpdatedAt = CreatedAt.AddMinutes(1);
 
     [Fact]
-    public void TypeShapeAndConstructorMatchWriteSideContract()
+    public void ConstructorAndSaveSignatureRemainStable()
     {
         Assert.Throws<ArgumentNullException>(() => new SqliteVocabularyRepository(null!));
         var type = typeof(SqliteVocabularyRepository);
         Assert.True(type.IsPublic && type.IsSealed);
-        Assert.DoesNotContain(typeof(GameLexicon.Application.Abstractions.Persistence.IVocabularyRepository), type.GetInterfaces());
         var methods = type.GetMethods().Where(method => method.DeclaringType == type).ToArray();
         var save = Assert.Single(methods, method => method.Name == nameof(SqliteVocabularyRepository.SaveAsync));
         Assert.Equal(typeof(Task), save.ReturnType);
         Assert.Equal(
             [typeof(VocabularyEntry), typeof(CancellationToken)],
             save.GetParameters().Select(parameter => parameter.ParameterType));
-        Assert.DoesNotContain(methods, method => method.Name is
-            "FindByNormalizedHeadwordAsync" or "GetDetailsAsync" or "SearchAsync");
     }
 
     [Fact]

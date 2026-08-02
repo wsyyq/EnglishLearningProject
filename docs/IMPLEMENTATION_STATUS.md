@@ -1113,8 +1113,38 @@ M1-T08 自动验收结果：
 - 完成时间：2026-08-02。
 - Git 提交：未创建。
 
-下一任务：M1-T09：SQLite 查询与生命周期。
-状态：Not Started。不得自动执行 M1-T09。
+当前任务：
+
+```text
+M1-T09：SQLite 查询与生命周期
+状态：Done
+```
+
+M1-T09 自动验收结果：
+
+- 开始时间：2026-08-02；前置基线提交 `11dc170281cd3c2c4961d164bb76a20c4a3d9564` 存在且内容完整；当前 HEAD 另含已提交的 M1-T09 指令更新 `2da2ae2`；分支为 `main`；初始工作区干净；M1-T08 为 Done、M1-T09 为 Not Started；解决方案为 8 个项目；目标框架未变化；无 Godot 进程。
+- 基线构建成功，0 警告、0 错误；基线测试 266/266 通过（Domain 111、Application 61、Infrastructure 94）。
+- 新增 `SqliteVocabularyRepository.Queries.cs` 查询侧 partial；合并后的 `public sealed partial` 类型正式实现完整 `IVocabularyRepository`，保留并复用 M1-T08 的构造函数、连接工厂和 `SaveAsync`，三个查询方法均为真实实现且无占位。
+- `FindByNormalizedHeadwordAsync` 验证 null/空白输入，只对调用方提供的 normalized headword 执行区分大小写的精确活动词条查询；不 Trim、不改写大小写、不调用规范化器；找不到或只有归档同名时返回 null，损坏的重复活动结果明确失败。
+- `GetDetailsAsync` 在单连接和单个读事务内依次读取完整词条、全部链接例句和全部标签；活动与归档词条均可读取；例句按 SortOrder/Id、标签按 NormalizedName/Id 稳定排序；支持手工、Capture 和 OCR 例句；0 个 Primary 允许，多个 Primary、损坏布尔/ID/时间/目标范围或关联数据明确失败。
+- `SearchAsync` 在单连接和单个读事务内执行 Count、当前页基础词条、当前页 Primary、当前页 Tags 四次查询；分页主查询以 `vocabulary_entries` 为唯一主表，关联筛选使用 EXISTS，未通过巨型 JOIN 分页；Count 在分页前统计去重词条，Offset 使用 checked long，越界页返回空 Items 和正确 TotalCount。
+- SearchText 对 headword、normalized_headword、part_of_speech、phonetic、definition_english、translation_chinese、notes 七个词条字段执行 SQLite ASCII-oriented、大小写不敏感的字面子串 LIKE；反斜杠、百分号和下划线均转义；不搜索例句正文、GameTitle 或 Tag Name，也不 Trim 或规范化。
+- GameTitle 使用链接例句的精确 `COLLATE NOCASE` EXISTS 筛选；TagIds 使用全部标签均存在的 ALL/AND 语义；SearchText、GameTitle、TagIds、EntryType 和 ArchiveFilter 之间均使用 AND。
+- 三种排序分别为 UpdatedAt DESC、Headword NOCASE ASC、CreatedAt DESC，均附加 Id ASC 稳定次级键；页面 Primary 为 0 时摘要 Primary 字段为 null，恰好 1 个时映射正文和 GameTitle，多个时视为损坏；Tags 完整且稳定排序，关联查询不改变页面词条顺序。
+- 所有 SQL 值参数化，列显式列出；未使用 `SELECT *`、查询占位、动态用户 ORDER BY、文本规范化、日志记录或永久删除；CancellationToken 传播至连接、事务、命令、Reader 和提交；异常和取消路径均释放资源。
+- 新增查询测试 33 个；为完成接口后的类型形状，仅最小更新 M1-T08 写侧测试中的旧阶段断言，不修改任何写逻辑。Infrastructure 测试 127/127 通过；根解决方案测试 299/299 通过（Domain 111、Application 61、Infrastructure 127）；0 失败、0 跳过。
+- 测试使用 Migration001→Migration002 创建真实临时 SQLite 文件，覆盖接口反射、Find 完整映射和损坏数据、Details 聚合与 Capture/OCR、SearchText 七字段和字面转义、GameTitle、Tag ALL、组合筛选、三种排序、分页、Primary/Tag 聚合、取消、索引存在性及 DB/WAL/SHM 可删除。
+- Migration001 哈希保持 `1fd5546081fe87c479ebd21d52e26f7d1dfaa636`；Migration002 哈希保持 `d8ce250e24442ece38c231e3ae8286a4d0def4c5`。未修改 Domain、Application、迁移、M1-T06/M1-T07 Repository、M1-T08 SaveAsync、Godot、项目引用、目标框架或 NuGet 包；未启动 Godot。
+- Decision Review：一般搜索 MVP 语义会约束后续 UseCase/UI，已在 `DECISIONS.md` 记录 ADR-008；环境事实未变化，`ENVIRONMENT.md` 不修改。
+- 已知限制：无永久删除、复习状态筛选、FTS、原句全文搜索、标签名称搜索、游戏名称模糊搜索、UseCase 或 UI；SQLite LIKE/NOCASE 为 MVP 的 ASCII-oriented 大小写行为。
+- 非 GUI 人工审查已于 2026-08-02 完成并通过：完整接口、四个真实方法、M1-T08 写逻辑保护、Find/Details/Search 语义、一致快照、稳定分页、聚合完整性、LIKE 字面转义、GameTitle/Tag 筛选、损坏数据策略、取消与资源释放、ADR-008、迁移哈希、测试结果和任务边界均获确认。GUI 验收不适用。
+- 最终 Decision Review：ADR-008 与实际实现及人工审查一致，无需修改；环境事实未变化，`ENVIRONMENT.md` 保持不变。
+- 最终 Skill Impact Review：未产生新的可复用路由、流程、验收或安全规则，Skill update required：No；Skills 未修改，无需重启会话。
+- 完成时间：2026-08-02。
+- Git 提交：未创建。
+
+下一任务：M1-T10：手工创建词条 UseCase。
+状态：Not Started。不得自动执行 M1-T10。
 
 ---
 

@@ -55,3 +55,11 @@
 - Decision: `SentenceExample.CaptureId` is nullable in Domain; an OCR region still requires a nonempty capture identifier. Do not modify `Migration001`.
 - Reason: the Domain model must represent the product capability rather than inherit a temporary persistence limitation.
 - Consequence: M1-T05 must align SQLite through a new migration before capture-free examples can be persisted.
+
+## ADR-008: Vocabulary search uses bounded MVP matching semantics
+
+- Status: Accepted
+- Context: repository search semantics must remain deterministic across future Application UseCases and Godot UI without adding FTS or ambiguous multi-table keyword behavior.
+- Decision: `SearchText` performs escaped literal substring matching over the seven vocabulary-entry text fields only; `GameTitle` is an exact SQLite `NOCASE` match through linked examples; multiple `TagIds` use ALL/AND semantics. All supplied filters combine with AND.
+- Reason: keep pagination duplicate-free, make each filter independently understandable, and preserve a stable offline SQLite MVP contract.
+- Consequence: SearchText does not search example text, game titles, or tag names; SQLite LIKE/NOCASE provides ASCII-oriented case handling until a future explicitly scoped search migration or feature changes the contract.
